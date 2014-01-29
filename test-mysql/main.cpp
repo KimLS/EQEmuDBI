@@ -4,6 +4,9 @@
 
 int main() {
 	DBI::DatabaseAttributes attr;
+	attr["mysql_reconnect"] = "1";
+	attr["mysql_server_side_prepare"]  = "1";
+
 	DBI::DatabaseHandle *dbh = DBI::DatabaseInterface::Instance()->Connect("mysql", "eqdb", "127.0.0.1", "root", "", attr);
 	if(dbh) {
 		printf("Connected...\n");

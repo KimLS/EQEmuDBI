@@ -6,6 +6,7 @@
 #include <Windows.h>
 #endif
 #include <mysql.h>
+#include <mysqld_error.h>
 #include <errmsg.h>
 
 namespace DBI
@@ -33,6 +34,7 @@ public:
 
 private:
 	bool _basic_execute(std::string stmt, StatementArguments &args);
+	bool _basic_execute_server_side(std::string stmt, StatementArguments &args);
 	std::string _quote(std::string v);
 	MYSQL *handle;
 	bool server_side_prepare;
