@@ -11,3 +11,11 @@
 *.lai
 *.la
 *.a
+
+dependencies/
+build/
+Build/
+build32/
+Build32/
+build64/
+Build64/

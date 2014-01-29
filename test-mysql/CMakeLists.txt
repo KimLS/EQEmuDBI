@@ -1,0 +1,35 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+
+SET(mysql_test_sources
+	main.cpp
+)
+
+SET(mysql_test_headers
+	
+)
+
+ADD_EXECUTABLE(mysql_test ${mysql_test_sources} ${mysql_test_headers})
+
+INSTALL(TARGETS mysql_test RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
+
+TARGET_LINK_LIBRARIES(mysql_test dbi debug ${MySQL_LIBRARY_DEBUG} optimized ${MySQL_LIBRARY_RELEASE})
+
+IF(MSVC)
+	SET_TARGET_PROPERTIES(mysql_test PROPERTIES LINK_FLAGS_RELEASE "/OPT:REF /OPT:ICF")
+	TARGET_LINK_LIBRARIES(mysql_test "Ws2_32.lib")
+ENDIF(MSVC)
+
+IF(MINGW)
+	TARGET_LINK_LIBRARIES(mysql_test "WS2_32")
+ENDIF(MINGW)
+
+IF(UNIX)
+	TARGET_LINK_LIBRARIES(mysql_test "${CMAKE_DL_LIBS}")
+	TARGET_LINK_LIBRARIES(mysql_test "z")
+	TARGET_LINK_LIBRARIES(mysql_test "m")
+	TARGET_LINK_LIBRARIES(mysql_test "rt")
+	TARGET_LINK_LIBRARIES(mysql_test "pthread")
+	ADD_DEFINITIONS(-fPIC)
+ENDIF(UNIX)
+
+SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
