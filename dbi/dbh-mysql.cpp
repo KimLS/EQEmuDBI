@@ -243,10 +243,10 @@ bool DBI::MySQLDatabaseHandle::_basic_execute(std::string stmt, DBI::StatementAr
 	for(size_t i = 0; i < stmt_sz; ++i) {
 		char t = stmt[i];
 		if(escaped) {
-			final_string.push_back('\\');
 			final_string.push_back(t);
 			escaped = false;
 		} else if(t == '\\') {
+			final_string.push_back(t);
 			escaped = true;
 		} else if(t == '?') {
 			if(current_arg < args.size()) {

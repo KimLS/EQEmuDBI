@@ -28,6 +28,7 @@ public:
 	virtual bool Rollback();
 
 private:
+	std::string _process_query(std::string stmt);
 	PGconn *handle;	
 };
 
