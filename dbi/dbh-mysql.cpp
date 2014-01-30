@@ -354,6 +354,14 @@ bool DBI::MySQLDatabaseHandle::_basic_execute(std::string stmt, DBI::StatementAr
 						SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from std::string arg in DBI::MySQLDatabaseHandle::_basic_execute(stmt, args).");
 						return false;
 					}
+				} else if(t.type() == typeid(const char*)) {
+					try {
+						std::string v(DBI::any_cast<const char*>(t));
+						final_string += _quote(v);
+					} catch(DBI::bad_any_cast) {
+						SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from const char* arg in DBI::MySQLDatabaseHandle::_basic_execute(stmt, args).");
+						return false;
+					}
 				} else if(t.type() == typeid(std::nullptr_t)) {
 					final_string += "NULL";
 				} else {
@@ -620,6 +628,23 @@ bool DBI::MySQLDatabaseHandle::_basic_execute_server_side(std::string stmt, DBI:
 						delete[] params;
 						return false;
 					}
+				} else if(t->type() == typeid(const char*)) {
+					try {
+						const char* v = DBI::any_cast<const char*>(*t);
+						if(v) {
+							params[i].buffer_type = MYSQL_TYPE_STRING;
+							params[i].buffer = (void*)v;
+							params[i].is_unsigned = 0;
+							params[i].is_null = nullptr;
+							params[i].length = 0;
+							params[i].buffer_length = static_cast<unsigned long>(strlen(v));
+						}
+					} catch(DBI::bad_any_cast) {
+						SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from const char* arg in DBI::MySQLDatabaseHandle::_basic_execute_server_side(stmt, args).");
+						mysql_stmt_close(my_stmt);
+						delete[] params;
+						return false;
+					}
 				} else if(t->type() == typeid(nullptr_t)) {
 					params[i].buffer_type = MYSQL_TYPE_NULL;
 					params[i].buffer = nullptr;
@@ -691,4 +716,35 @@ DBI::StatementHandle* DBI::MySQLDatabaseHandle::Prepare(std::string stmt) {
 
 	MySQLStatementHandle *sth = new MySQLStatementHandle(my_stmt);
 	return sth;
+}
+
+bool DBI::MySQLDatabaseHandle::Begin() {
+	if(mysql_autocommit(handle, 0)) {
+		SetError(DBH_ERROR_BEGIN_FAILURE, "DBI::MySQLDatabaseHandle::Begin() failed.");
+		return false;
+	}
+
+	return true;
+}
+
+bool DBI::MySQLDatabaseHandle::Commit() {
+	if(mysql_commit(handle)) {
+		mysql_autocommit(handle, 1);
+		SetError(DBH_ERROR_COMMIT_FAILURE, "DBI::MySQLDatabaseHandle::Commit() failed.");
+		return false;
+	}
+
+	mysql_autocommit(handle, 1);
+	return true;
+}
+
+bool DBI::MySQLDatabaseHandle::Rollback() {
+	if(mysql_rollback(handle)) {
+		mysql_autocommit(handle, 1);
+		SetError(DBH_ERROR_ROLLBACK_FAILURE, "DBI::MySQLDatabaseHandle::Rollback() failed.");
+		return false;
+	}
+
+	mysql_autocommit(handle, 1);
+	return true;
 }

@@ -1,0 +1,43 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+
+SET(sqlite_test_sources
+	main.cpp
+)
+
+SET(sqlite_test_headers
+	
+)
+
+ADD_EXECUTABLE(sqlite_test ${sqlite_test_sources} ${sqlite_test_headers})
+
+INSTALL(TARGETS sqlite_test RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
+
+TARGET_LINK_LIBRARIES(sqlite_test dbi)
+
+IF(MySQL_FOUND)
+	TARGET_LINK_LIBRARIES(sqlite_test debug ${MySQL_LIBRARY_DEBUG} optimized ${MySQL_LIBRARY_RELEASE})
+ENDIF(MySQL_FOUND)
+
+IF(PostgreSQL_FOUND)
+	TARGET_LINK_LIBRARIES(sqlite_test ${PostgreSQL_LIBRARIES})
+ENDIF(PostgreSQL_FOUND)
+
+IF(MSVC)
+	SET_TARGET_PROPERTIES(sqlite_test PROPERTIES LINK_FLAGS_RELEASE "/OPT:REF /OPT:ICF")
+	TARGET_LINK_LIBRARIES(sqlite_test "Ws2_32.lib")
+ENDIF(MSVC)
+
+IF(MINGW)
+	TARGET_LINK_LIBRARIES(sqlite_test "WS2_32")
+ENDIF(MINGW)
+
+IF(UNIX)
+	TARGET_LINK_LIBRARIES(sqlite_test "${CMAKE_DL_LIBS}")
+	TARGET_LINK_LIBRARIES(sqlite_test "z")
+	TARGET_LINK_LIBRARIES(sqlite_test "m")
+	TARGET_LINK_LIBRARIES(sqlite_test "rt")
+	TARGET_LINK_LIBRARIES(sqlite_test "pthread")
+	ADD_DEFINITIONS(-fPIC)
+ENDIF(UNIX)
+
+SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)

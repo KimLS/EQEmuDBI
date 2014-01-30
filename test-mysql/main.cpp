@@ -20,34 +20,20 @@ int main() {
 
 	DBI::StatementHandle *sth = dbh->Prepare("SELECT * FROM variables WHERE varname=?");
 	if(sth) {
-		sth->Execute(std::string("MOTD"));
+		sth->Execute((const char*)"MOTD");
 		DBI::ResultSet *rs = sth->Results();
-		auto iter = rs->RowsByIndex().begin();
-		while(iter != rs->RowsByIndex().end()) {
+		auto iter = rs->Rows().begin();
+		while(iter != rs->Rows().end()) {
 			auto row = (*iter);
 			printf("\n");
+			
+			auto fields = rs->Fields();
 			for(int i = 0; i < row.size(); ++i) {
-				printf("null = %s: %s\n", row[i].first ? "true" : "false", row[i].second.c_str());
+				printf("null = %s: %s\n", row[fields[i]].is_null ? "true" : "false", row[fields[i]].value.c_str());
 			}
 			++iter;
 		}
 	}
-
-	//if(sth) {
-	//	sth->Execute(std::string("TestArgument"), 275.2f, std::string("Some information about this shit."));
-	//}
-
-	//DBI::StatementHandle *sth = dbh->Prepare("REPLACE INTO variables (varname, value, information) VALUES(?, ?, ?)");
-	//if(sth) {
-	//	sth->Execute(std::string("TestArgument"), 275.2f, std::string("Some information about this shit."));
-	//}
-
-	//if(!dbh->Do("REPLACE INTO variables (varname, value, information) VALUES(?, ?, ?)", 
-	//	std::string("TestArgument"), 
-	//	275.2f, 
-	//	std::string("Some information about this shit."))) {
-	//	printf("dbh->Do error: %s\n", dbh->ErrorMessage());
-	//}
 
 	getchar();
 	return 0;

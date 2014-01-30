@@ -27,9 +27,9 @@ public:
 	virtual StatementHandle* Prepare(std::string stmt);
 	virtual std::string Quote(std::string stmt) { return _quote(stmt); }
 
-	//virtual bool BeginWork() = 0;
-	//virtual bool Commit() = 0;
-	//virtual bool Rollback() = 0;
+	virtual bool Begin();
+	virtual bool Commit();
+	virtual bool Rollback();
 
 private:
 	bool _basic_execute(std::string stmt, StatementArguments &args);

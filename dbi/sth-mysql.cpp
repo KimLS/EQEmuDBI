@@ -224,6 +224,23 @@ bool DBI::MySQLStatementHandle::Execute(StatementArguments &args) {
 					delete[] params;
 					return false;
 				}
+			} else if(t->type() == typeid(const char*)) {
+				try {
+					const char* v = DBI::any_cast<const char*>(*t);
+					if(v) {
+						params[i].buffer_type = MYSQL_TYPE_STRING;
+						params[i].buffer = (void*)v;
+						params[i].is_unsigned = 0;
+						params[i].is_null = nullptr;
+						params[i].length = 0;
+						params[i].buffer_length = static_cast<unsigned long>(strlen(v));
+					}
+				} catch(DBI::bad_any_cast) {
+					SetError(STH_ERROR_INVALID_ARGS, "Could not convert from const char* arg in DBI::MySQLStatementHandle::Execute(args).");
+					mysql_stmt_close(statement);
+					delete[] params;
+					return false;
+				}
 			} else if(t->type() == typeid(nullptr_t)) {
 				params[i].buffer_type = MYSQL_TYPE_NULL;
 				params[i].buffer = nullptr;
@@ -319,24 +336,21 @@ DBI::ResultSet* DBI::MySQLStatementHandle::Results() {
 		}
 
 		std::list<DBI::ResultSet::Row> rows;
-		std::list<DBI::ResultSet::RowIdx> rows_idx;
 		while(!mysql_stmt_fetch(statement)) {
 			DBI::ResultSet::Row row;
-			DBI::ResultSet::RowIdx row_idx;
+
 			for(uint32_t i = 0; i < fields; ++i) {
 				std::string val;
 				if(len[i] > 0) {
 					val.assign(buffers[i], len[i]);
 				}
 
-				row[field_names[i]] = std::make_pair(is_null[i] ? true : false, val);
-				row_idx.push_back(std::make_pair(is_null[i] ? true : false, val));
+				row[field_names[i]] = DBI::ResultSet::FieldData(is_null[i] ? true : false, err[i] ? true : false, val);
 			}
 			rows.push_back(row);
-			rows_idx.push_back(row_idx);
 		}
 
-		ResultSet *rs = new ResultSet(field_names, rows, rows_idx, 
+		ResultSet *rs = new ResultSet(field_names, rows,
 			static_cast<unsigned long>(mysql_stmt_affected_rows(statement)),
 			static_cast<unsigned long>(mysql_stmt_num_rows(statement)),
 			static_cast<unsigned long>(mysql_stmt_insert_id(statement)));

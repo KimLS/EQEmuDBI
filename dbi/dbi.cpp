@@ -1,5 +1,15 @@
 #include "dbi.h"
+#ifdef MYSQL_ENGINE
 #include "dbh-mysql.h"
+#endif
+
+#ifdef POSTGRESQL_ENGINE
+#include "dbh-pg.h"
+#endif
+
+#ifdef SQLITE_ENGINE
+//#include "dbh-sqlite.h"
+#endif
 
 DBI::DatabaseInterface* DBI::DatabaseInterface::_instance = nullptr;
 
@@ -25,6 +35,9 @@ void DBI::DatabaseInterface::Drivers(std::list<std::string> &drivers) {
 #ifdef POSTGRESQL_ENGINE
 	drivers.push_back("postgresql");
 #endif
+#ifdef SQLITE_ENGINE
+	drivers.push_back("sqlite");
+#endif
 }
 
 DBI::DatabaseHandle* DBI::DatabaseInterface::Connect(std::string driver, std::string dbname, std::string host, 
@@ -44,8 +57,28 @@ DBI::DatabaseHandle* DBI::DatabaseInterface::Connect(std::string driver, std::st
 #endif
 
 #ifdef POSTGRESQL_ENGINE
-	if(driver.compare("pg") == 0) {
+	if(driver.compare("postgresql") == 0) {
+		DBI::DatabaseHandle *dbh = new PostgreSQLDatabaseHandle();
+		if(dbh->Connect(dbname, host, username, auth, attr)) {
+			return dbh;
+		}
 		
+		SetError(DBI_ERROR_FAILED_TO_CONNECT, "Failed to connect to the selected PostgreSQL Database.");
+		delete dbh;
+		return nullptr;
+	}
+#endif
+
+#ifdef SQLITE_ENGINE
+	if(driver.compare("sqlite") == 0) {
+		//DBI::DatabaseHandle *dbh = new SQLiteDatabaseHandle();
+		//if(dbh->Connect(dbname, host, username, auth, attr)) {
+		//	return dbh;
+		//}
+		//
+		//SetError(DBI_ERROR_FAILED_TO_CONNECT, "Failed to connect to the selected MySQL Database.");
+		//delete dbh;
+		return nullptr;
 	}
 #endif
 

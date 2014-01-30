@@ -16,6 +16,18 @@ SET(dbi_headers
 	sth.h
 )
 
+IF(DBI_USE_SQLITE)
+	SET(dbi_sources
+		${dbi_sources} sqlite3.c #dbh-sqlite.cpp sth-sqlite.cpp
+	)
+	
+	#SET(dbi_headers
+	#	${dbi_headers} dbh-sqlite.h sth-sqlite.h
+	#)
+
+	#SET_SOURCE_FILES_PROPERTIES(sqlite3.c PROPERTIES LANGUAGE CXX)
+ENDIF(DBI_USE_SQLITE)
+
 IF(MySQL_FOUND)
 	SET(dbi_sources
 		${dbi_sources} dbh-mysql.cpp sth-mysql.cpp
@@ -27,11 +39,30 @@ IF(MySQL_FOUND)
 	INCLUDE_DIRECTORIES("${MySQL_INCLUDE_DIR}")
 ENDIF(MySQL_FOUND)
 
+IF(PostgreSQL_FOUND)
+	SET(dbi_sources
+		${dbi_sources} dbh-pg.cpp sth-pg.cpp
+	)
+	
+	SET(dbi_headers
+		${dbi_headers} dbh-pg.h sth-pg.h
+	)
+	INCLUDE_DIRECTORIES("${PostgreSQL_INCLUDE_DIRS}")
+ENDIF(PostgreSQL_FOUND)
+
 ADD_LIBRARY(dbi ${dbi_sources} ${dbi_headers})
 
 IF(MySQL_FOUND)
 	ADD_DEFINITIONS(-DMYSQL_ENGINE)
 ENDIF(MySQL_FOUND)
+
+IF(PostgreSQL_FOUND)
+	ADD_DEFINITIONS(-DPOSTGRESQL_ENGINE)
+ENDIF(PostgreSQL_FOUND)
+
+IF(DBI_USE_SQLITE)
+	ADD_DEFINITIONS(-DSQLITE_ENGINE)
+ENDIF(DBI_USE_SQLITE)
 
 IF(UNIX)
     ADD_DEFINITIONS(-fPIC)
