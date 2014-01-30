@@ -38,7 +38,8 @@ public:
 
 	virtual StatementHandle* Prepare(std::string stmt) = 0;
 	virtual std::string Quote(std::string stmt) = 0;
-	
+
+	virtual bool Ping() = 0;
 	virtual bool Begin() = 0;
 	virtual bool Commit() = 0;
 	virtual bool Rollback() = 0;

@@ -27,6 +27,7 @@ public:
 	virtual StatementHandle* Prepare(std::string stmt);
 	virtual std::string Quote(std::string stmt) { return _quote(stmt); }
 
+	virtual bool Ping();
 	virtual bool Begin();
 	virtual bool Commit();
 	virtual bool Rollback();

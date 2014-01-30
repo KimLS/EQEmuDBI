@@ -1,6 +1,7 @@
 #include "sth-mysql.h"
 #include "rs.h"
 #include <stdint.h>
+#include <assert.h>
 
 DBI::MySQLStatementHandle::MySQLStatementHandle(MYSQL_STMT *stmt) : statement(stmt) {
 }
@@ -16,6 +17,7 @@ bool DBI::MySQLStatementHandle::Execute() {
 }
 
 bool DBI::MySQLStatementHandle::Execute(StatementArguments &args) {
+	assert(statement != nullptr);
 	MYSQL_BIND *params = nullptr;
 	size_t argc = args.size();
 	if(argc > 0) {
@@ -280,6 +282,7 @@ bool DBI::MySQLStatementHandle::Execute(StatementArguments &args) {
 }
 
 DBI::ResultSet* DBI::MySQLStatementHandle::Results() {
+	assert(statement != nullptr);
 	MYSQL_RES *res = mysql_stmt_result_metadata(statement);
 	if(res) {
 		char **buffers = nullptr;

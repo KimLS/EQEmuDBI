@@ -58,7 +58,7 @@ DBI::DatabaseHandle* DBI::DatabaseInterface::Connect(std::string driver, std::st
 
 #ifdef POSTGRESQL_ENGINE
 	if(driver.compare("postgresql") == 0) {
-		DBI::DatabaseHandle *dbh = new PostgreSQLDatabaseHandle();
+		DBI::DatabaseHandle *dbh = new PGDatabaseHandle();
 		if(dbh->Connect(dbname, host, username, auth, attr)) {
 			return dbh;
 		}

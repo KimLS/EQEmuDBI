@@ -1,6 +1,7 @@
 #include "dbh-mysql.h"
 #include "sth-mysql.h"
 #include <stdint.h>
+#include <assert.h>
 
 DBI::MySQLDatabaseHandle::MySQLDatabaseHandle() {
 	handle = nullptr;
@@ -225,9 +226,6 @@ bool DBI::MySQLDatabaseHandle::Do(std::string stmt) {
 }
 
 bool DBI::MySQLDatabaseHandle::Do(std::string stmt, DBI::StatementArguments &args) {
-	MYSQL_STMT *my_stmt = nullptr;
-	MYSQL_BIND *my_bind = nullptr;
-
 	if(server_side_prepare) {
 		return _basic_execute_server_side(stmt, args);
 	} else {
@@ -236,6 +234,7 @@ bool DBI::MySQLDatabaseHandle::Do(std::string stmt, DBI::StatementArguments &arg
 }
 
 bool DBI::MySQLDatabaseHandle::_basic_execute(std::string stmt, DBI::StatementArguments &args) {
+	assert(handle != nullptr);
 	std::string final_string;
 	size_t current_arg = 0;
 	size_t stmt_sz = stmt.size();
@@ -411,6 +410,7 @@ bool DBI::MySQLDatabaseHandle::_basic_execute(std::string stmt, DBI::StatementAr
 }
 
 bool DBI::MySQLDatabaseHandle::_basic_execute_server_side(std::string stmt, DBI::StatementArguments &args) {
+	assert(handle != nullptr);
 	MYSQL_STMT *my_stmt = mysql_stmt_init(handle);
 	if(mysql_stmt_prepare(my_stmt, stmt.c_str(), static_cast<unsigned long>(stmt.length()))) {
 		if(mysql_stmt_errno(my_stmt) == ER_UNSUPPORTED_PS) {
@@ -689,6 +689,7 @@ bool DBI::MySQLDatabaseHandle::_basic_execute_server_side(std::string stmt, DBI:
 }
 
 std::string DBI::MySQLDatabaseHandle::_quote(std::string v) {
+	assert(handle != nullptr);
 	std::string ret = "'";
 
 	if(!v.empty()) {
@@ -703,6 +704,7 @@ std::string DBI::MySQLDatabaseHandle::_quote(std::string v) {
 }
 
 DBI::StatementHandle* DBI::MySQLDatabaseHandle::Prepare(std::string stmt) {
+	assert(handle != nullptr);
 	MYSQL_STMT *my_stmt = mysql_stmt_init(handle);
 	if(mysql_stmt_prepare(my_stmt, stmt.c_str(), static_cast<unsigned long>(stmt.length()))) {
 		if(mysql_stmt_errno(my_stmt) == ER_UNSUPPORTED_PS) {
@@ -718,7 +720,18 @@ DBI::StatementHandle* DBI::MySQLDatabaseHandle::Prepare(std::string stmt) {
 	return sth;
 }
 
+bool DBI::MySQLDatabaseHandle::Ping() {
+	assert(handle != nullptr);
+	if(mysql_ping(handle)) {
+		SetError(DBH_ERROR_PING_CONNECTION, "Pinging the MySQL connection failed due to the server being gone and/or reconnect being disabled.");
+		return false;
+	}
+
+	return true;
+}
+
 bool DBI::MySQLDatabaseHandle::Begin() {
+	assert(handle != nullptr);
 	if(mysql_autocommit(handle, 0)) {
 		SetError(DBH_ERROR_BEGIN_FAILURE, "DBI::MySQLDatabaseHandle::Begin() failed.");
 		return false;
@@ -728,6 +741,7 @@ bool DBI::MySQLDatabaseHandle::Begin() {
 }
 
 bool DBI::MySQLDatabaseHandle::Commit() {
+	assert(handle != nullptr);
 	if(mysql_commit(handle)) {
 		mysql_autocommit(handle, 1);
 		SetError(DBH_ERROR_COMMIT_FAILURE, "DBI::MySQLDatabaseHandle::Commit() failed.");
@@ -739,6 +753,7 @@ bool DBI::MySQLDatabaseHandle::Commit() {
 }
 
 bool DBI::MySQLDatabaseHandle::Rollback() {
+	assert(handle != nullptr);
 	if(mysql_rollback(handle)) {
 		mysql_autocommit(handle, 1);
 		SetError(DBH_ERROR_ROLLBACK_FAILURE, "DBI::MySQLDatabaseHandle::Rollback() failed.");

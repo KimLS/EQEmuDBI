@@ -12,15 +12,7 @@ ADD_EXECUTABLE(postgresql_test ${postgresql_test_sources} ${postgresql_test_head
 
 INSTALL(TARGETS postgresql_test RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
 
-TARGET_LINK_LIBRARIES(postgresql_test dbi)
-
-IF(MySQL_FOUND)
-	TARGET_LINK_LIBRARIES(postgresql_test debug ${MySQL_LIBRARY_DEBUG} optimized ${MySQL_LIBRARY_RELEASE})
-ENDIF(MySQL_FOUND)
-
-IF(PostgreSQL_FOUND)
-	TARGET_LINK_LIBRARIES(postgresql_test ${PostgreSQL_LIBRARIES})
-ENDIF(PostgreSQL_FOUND)
+TARGET_LINK_LIBRARIES(postgresql_test dbi ${DBI_LIBRARIES})
 
 IF(MSVC)
 	SET_TARGET_PROPERTIES(postgresql_test PROPERTIES LINK_FLAGS_RELEASE "/OPT:REF /OPT:ICF")
