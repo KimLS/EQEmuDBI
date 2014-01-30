@@ -3,9 +3,7 @@
 
 DBI::DatabaseInterface* DBI::DatabaseInterface::_instance = nullptr;
 
-DBI::DatabaseInterface::DatabaseInterface()
-	: error_code(DBI_ERROR_NONE) {
-	error_message[0] = '\0';
+DBI::DatabaseInterface::DatabaseInterface() {
 }
 
 DBI::DatabaseInterface::~DatabaseInterface() {
@@ -53,17 +51,4 @@ DBI::DatabaseHandle* DBI::DatabaseInterface::Connect(std::string driver, std::st
 
 	SetError(DBI_ERROR_DRIVER_NOT_FOUND, "Could not find a suitable driver for DBI::Connect.");
 	return nullptr;
-}
-
-void DBI::DatabaseInterface::SetError(DBI::DatabaseInterfaceErrorCode code, const char *msg) {
-	error_code = code;
-
-	size_t msg_len = strlen(msg);
-	if(msg_len < MAX_DBI_ERROR_MSG_LEN) {
-		strcpy(error_message, msg);
-		error_message[msg_len] = '\0';
-	} else {
-		strncpy(error_message, msg, MAX_DBI_ERROR_MSG_LEN - 1);
-		error_message[MAX_DBI_ERROR_MSG_LEN] = '\0';
-	}
 }

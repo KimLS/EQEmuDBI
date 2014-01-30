@@ -11,9 +11,8 @@
 
 namespace DBI
 {
-//class DatabaseStatement;
 
-class DBI_EXPORT MySQLDatabaseHandle : public DatabaseHandle
+class MySQLDatabaseHandle : public DatabaseHandle
 {
 public:
 	MySQLDatabaseHandle();
@@ -25,9 +24,9 @@ public:
 	
 	virtual bool Do(std::string stmt);
 	virtual bool Do(std::string stmt, StatementArguments &args);
-	//virtual DatabaseStatement* Prepare(std::string stmt) = 0;
-	//virtual std::string Quote(std::string stmt) = 0;
-	//
+	virtual StatementHandle* Prepare(std::string stmt);
+	virtual std::string Quote(std::string stmt) { return _quote(stmt); }
+
 	//virtual bool BeginWork() = 0;
 	//virtual bool Commit() = 0;
 	//virtual bool Rollback() = 0;

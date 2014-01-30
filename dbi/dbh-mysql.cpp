@@ -1,6 +1,6 @@
 #include "dbh-mysql.h"
+#include "sth-mysql.h"
 #include <stdint.h>
-#include <stdio.h>
 
 DBI::MySQLDatabaseHandle::MySQLDatabaseHandle() {
 	handle = nullptr;
@@ -675,4 +675,20 @@ std::string DBI::MySQLDatabaseHandle::_quote(std::string v) {
 
 	ret.push_back('\'');
 	return ret;
+}
+
+DBI::StatementHandle* DBI::MySQLDatabaseHandle::Prepare(std::string stmt) {
+	MYSQL_STMT *my_stmt = mysql_stmt_init(handle);
+	if(mysql_stmt_prepare(my_stmt, stmt.c_str(), static_cast<unsigned long>(stmt.length()))) {
+		if(mysql_stmt_errno(my_stmt) == ER_UNSUPPORTED_PS) {
+			server_side_prepare = false;
+		}
+		
+		SetError(DBH_ERROR_PREPARE_FAILURE, "Could not prepare statement in DBI::MySQLDatabaseHandle::Prepare(stmt).");
+		mysql_stmt_close(my_stmt);
+		return nullptr;
+	}
+
+	MySQLStatementHandle *sth = new MySQLStatementHandle(my_stmt);
+	return sth;
 }
