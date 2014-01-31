@@ -15,9 +15,8 @@ public:
 	MySQLStatementHandle(MYSQL_STMT *stmt);
 	virtual ~MySQLStatementHandle();
 	
-	virtual bool Execute();
-	virtual bool Execute(StatementArguments &args);
-	virtual ResultSet* Results();
+	virtual ResultSet* Execute();
+	virtual ResultSet* Execute(StatementArguments &args);
 private:
 	MYSQL_STMT *statement;
 };

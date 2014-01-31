@@ -2,12 +2,11 @@
 #include "../dbi/dbi.h"
 #include "../dbi/dbh.h"
 #include "../dbi/sth.h"
-#include "../dbi/rs.h"
+#include "../dbi/rs-mysql.h"
 
 int main() {
 	DBI::DatabaseAttributes attr;
 	attr["mysql_reconnect"] = "1";
-	attr["mysql_server_side_prepare"]  = "1";
 
 	DBI::DatabaseHandle *dbh = DBI::DatabaseInterface::Instance()->Connect("mysql", "eqdb", "127.0.0.1", "root", "", attr);
 	if(dbh) {
@@ -18,10 +17,15 @@ int main() {
 		return 0;
 	}
 
+	DBI::MySQLResultSet *rs = (DBI::MySQLResultSet*)dbh->Do("UPDATE variables SET information = ? WHERE varname = ?", 
+		(const char*)"Some really crazy info here...", (const char*)"MOTD");
+	if(rs) {
+		printf("Affected rows: %d\n", rs->AffectedRows());
+	}
+
 	DBI::StatementHandle *sth = dbh->Prepare("SELECT * FROM variables WHERE varname=?");
 	if(sth) {
-		sth->Execute((const char*)"MOTD");
-		DBI::ResultSet *rs = sth->Results();
+		DBI::ResultSet *rs = sth->Execute((const char*)"MOTD");
 		auto iter = rs->Rows().begin();
 		while(iter != rs->Rows().end()) {
 			auto row = (*iter);
@@ -29,7 +33,7 @@ int main() {
 			
 			auto fields = rs->Fields();
 			for(int i = 0; i < row.size(); ++i) {
-				printf("null = %s: %s\n", row[fields[i]].is_null ? "true" : "false", row[fields[i]].value.c_str());
+				printf("%s: %s\n", fields[i].c_str(), row[fields[i]].value.c_str());
 			}
 			++iter;
 		}

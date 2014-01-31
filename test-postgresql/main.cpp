@@ -18,12 +18,13 @@ int main() {
 		return 0;
 	}
 
-	if(!dbh->Do("INSERT INTO variables(varname, value, information) VALUES(?, ?, ?)", std::string("MOTD"),
+	auto res = dbh->Do("INSERT INTO variables(varname, value, information) VALUES(?, ?, ?)", std::string("MOTD"),
 		std::string("Welcome to ProjectEQ! www.peqtgc.com Please use the forums to report bugs or other problems: www.peqtgc.com/phpBB2/"
 		" To activate a forum or login account, see the posts entitled \"Forum Activation\" and \"PEQ Login Server\" under the General section"
 		" of the forums. We are setup to use the *ORIGINAL NEKTULOS* for Titanium/6.2 clients only Please see the forum post entitled "
 		"\"About new zones\" also under the General section for further info."),
-		std::string())) {
+		std::string());
+	if(!res) {
 		printf("Error:\n");
 	}
 

@@ -1,5 +1,6 @@
 #include "dbh-pg.h"
 #include "sth.h"
+#include "rs.h"
 #include <stdint.h>
 #include <assert.h>
 #include <memory>
@@ -43,12 +44,12 @@ bool DBI::PGDatabaseHandle::Disconnect() {
 	return true;
 }
 
-bool DBI::PGDatabaseHandle::Do(std::string stmt) {
+DBI::ResultSet* DBI::PGDatabaseHandle::Do(std::string stmt) {
 	StatementArguments args;
 	return Do(stmt, args);
 }
 
-bool DBI::PGDatabaseHandle::Do(std::string stmt, DBI::StatementArguments &args) {
+DBI::ResultSet* DBI::PGDatabaseHandle::Do(std::string stmt, DBI::StatementArguments &args) {
 	assert(handle != nullptr);
 	std::string query = _process_query(stmt);
 	
@@ -79,7 +80,7 @@ bool DBI::PGDatabaseHandle::Do(std::string stmt, DBI::StatementArguments &args) 
 					paramSave.push_back(t);
 				} catch(DBI::bad_any_cast) {
 					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from bool arg in DBI::PGDatabaseHandle::Do(stmt, args).");
-					return false;
+					return nullptr;
 				}
 			} else if(t.type() == typeid(uint8_t)) {
 				try {
@@ -94,7 +95,7 @@ bool DBI::PGDatabaseHandle::Do(std::string stmt, DBI::StatementArguments &args) 
 					paramSave.push_back(t);
 				} catch(DBI::bad_any_cast) {
 					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from uint8_t arg in DBI::PGDatabaseHandle::Do(stmt, args).");
-					return false;
+					return nullptr;
 				}
 			} else if(t.type() == typeid(int8_t)) {
 				try {
@@ -109,7 +110,7 @@ bool DBI::PGDatabaseHandle::Do(std::string stmt, DBI::StatementArguments &args) 
 					paramSave.push_back(t);
 				} catch(DBI::bad_any_cast) {
 					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from int8_t arg in DBI::PGDatabaseHandle::Do(stmt, args).");
-					return false;
+					return nullptr;
 				}
 			} else if(t.type() == typeid(uint16_t)) {
 				try {
@@ -124,7 +125,7 @@ bool DBI::PGDatabaseHandle::Do(std::string stmt, DBI::StatementArguments &args) 
 					paramSave.push_back(t);
 				} catch(DBI::bad_any_cast) {
 					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from uint16_t arg in DBI::PGDatabaseHandle::Do(stmt, args).");
-					return false;
+					return nullptr;
 				}
 			} else if(t.type() == typeid(int16_t)) {
 				try {
@@ -139,7 +140,7 @@ bool DBI::PGDatabaseHandle::Do(std::string stmt, DBI::StatementArguments &args) 
 					paramSave.push_back(t);
 				} catch(DBI::bad_any_cast) {
 					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from int16_t arg in DBI::PGDatabaseHandle::Do(stmt, args).");
-					return false;
+					return nullptr;
 				}
 			} else if(t.type() == typeid(uint32_t)) {
 				try {
@@ -154,7 +155,7 @@ bool DBI::PGDatabaseHandle::Do(std::string stmt, DBI::StatementArguments &args) 
 					paramSave.push_back(t);
 				} catch(DBI::bad_any_cast) {
 					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from uint32_t arg in DBI::PGDatabaseHandle::Do(stmt, args).");
-					return false;
+					return nullptr;
 				}
 			} else if(t.type() == typeid(int32_t)) {
 				try {
@@ -169,7 +170,7 @@ bool DBI::PGDatabaseHandle::Do(std::string stmt, DBI::StatementArguments &args) 
 					paramSave.push_back(t);
 				} catch(DBI::bad_any_cast) {
 					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from int32_t arg in DBI::PGDatabaseHandle::Do(stmt, args).");
-					return false;
+					return nullptr;
 				}
 			} else if(t.type() == typeid(uint64_t)) {
 				try {
@@ -184,7 +185,7 @@ bool DBI::PGDatabaseHandle::Do(std::string stmt, DBI::StatementArguments &args) 
 					paramSave.push_back(t);
 				} catch(DBI::bad_any_cast) {
 					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from uint64_t arg in DBI::PGDatabaseHandle::Do(stmt, args).");
-					return false;
+					return nullptr;
 				}
 			} else if(t.type() == typeid(int64_t)) {
 				try {
@@ -199,7 +200,7 @@ bool DBI::PGDatabaseHandle::Do(std::string stmt, DBI::StatementArguments &args) 
 					paramSave.push_back(t);
 				} catch(DBI::bad_any_cast) {
 					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from int64_t arg in DBI::PGDatabaseHandle::Do(stmt, args).");
-					return false;
+					return nullptr;
 				}
 			} else if(t.type() == typeid(float)) {
 				try {
@@ -214,7 +215,7 @@ bool DBI::PGDatabaseHandle::Do(std::string stmt, DBI::StatementArguments &args) 
 					paramSave.push_back(t);
 				} catch(DBI::bad_any_cast) {
 					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from float arg in DBI::PGDatabaseHandle::Do(stmt, args).");
-					return false;
+					return nullptr;
 				}
 			} else if(t.type() == typeid(double)) {
 				try {
@@ -229,7 +230,7 @@ bool DBI::PGDatabaseHandle::Do(std::string stmt, DBI::StatementArguments &args) 
 					paramSave.push_back(t);
 				} catch(DBI::bad_any_cast) {
 					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from double arg in DBI::PGDatabaseHandle::Do(stmt, args).");
-					return false;
+					return nullptr;
 				}
 			} else if(t.type() == typeid(std::string)) {
 				try {
@@ -243,7 +244,7 @@ bool DBI::PGDatabaseHandle::Do(std::string stmt, DBI::StatementArguments &args) 
 					paramSave.push_back(t);
 				} catch(DBI::bad_any_cast) {
 					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from std::string arg in DBI::PGDatabaseHandle::Do(stmt, args).");
-					return false;
+					return nullptr;
 				}
 			} else if(t.type() == typeid(const char*)) {
 				try {
@@ -257,11 +258,11 @@ bool DBI::PGDatabaseHandle::Do(std::string stmt, DBI::StatementArguments &args) 
 					paramSave.push_back(t);
 				} catch(DBI::bad_any_cast) {
 					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from const char* arg in DBI::PGDatabaseHandle::Do(stmt, args).");
-					return false;
+					return nullptr;
 				}
 			} else if(!t.empty() && t.type() != typeid(std::nullptr_t)) {
 				SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from unknown arg in DBI::PGDatabaseHandle::Do(stmt, args).");
-				return false;
+				return nullptr;
 			}
 		}
 	}
@@ -270,7 +271,10 @@ bool DBI::PGDatabaseHandle::Do(std::string stmt, DBI::StatementArguments &args) 
 	
 	if(PQresultStatus(res) == PGRES_TUPLES_OK || PQresultStatus(res) == PGRES_COMMAND_OK) {
 		PQclear(res);
-		return true;
+
+		//pg doesn't have a working result set yet, will change sometime in the next day but still todo incase it takes me longer:
+		ResultSet *rs = new ResultSet();
+		return rs;
 	}
 
 	std::string err = "PG Error: ";
@@ -279,38 +283,11 @@ bool DBI::PGDatabaseHandle::Do(std::string stmt, DBI::StatementArguments &args) 
 	SetError(DBH_ERROR_QUERY, err);
 
 	PQclear(res);
-	return false;
-}
-
-std::string DBI::PGDatabaseHandle::Quote(std::string v) {
-	assert(handle != nullptr);
-	std::string ret = "'";
-
-	if(!v.empty()) {
-		char *escaped = PQescapeLiteral(handle, v.c_str(), v.length());
-		ret += escaped;
-		PQfreemem(escaped);
-	}
-	
-	ret.push_back('\'');
-	return ret;
+	return nullptr;
 }
 
 DBI::StatementHandle* DBI::PGDatabaseHandle::Prepare(std::string stmt) {
 	assert(handle != nullptr);
-	//MYSQL_STMT *my_stmt = mysql_stmt_init(handle);
-	//if(mysql_stmt_prepare(my_stmt, stmt.c_str(), static_cast<unsigned long>(stmt.length()))) {
-	//	if(mysql_stmt_errno(my_stmt) == ER_UNSUPPORTED_PS) {
-	//		server_side_prepare = false;
-	//	}
-	//	
-	//	SetError(DBH_ERROR_PREPARE_FAILURE, "Could not prepare statement in DBI::MySQLDatabaseHandle::Prepare(stmt).");
-	//	mysql_stmt_close(my_stmt);
-	//	return nullptr;
-	//}
-	//
-	//MySQLStatementHandle *sth = new MySQLStatementHandle(my_stmt);
-	//return sth;
 	return nullptr;
 }
 
@@ -331,17 +308,35 @@ bool DBI::PGDatabaseHandle::Ping() {
 
 bool DBI::PGDatabaseHandle::Begin() {
 	assert(handle != nullptr);
-	return Do("BEGIN");
+	ResultSet* rs = Do("BEGIN");
+	if(rs) {
+		delete rs;
+		return true;
+	}
+	else
+		return false;
 }
 
 bool DBI::PGDatabaseHandle::Commit() {
 	assert(handle != nullptr);
-	return Do("COMMIT");
+	ResultSet* rs = Do("COMMIT");
+	if(rs) {
+		delete rs;
+		return true;
+	}
+	else
+		return false;
 }
 
 bool DBI::PGDatabaseHandle::Rollback() {
 	assert(handle != nullptr);
-	return Do("ROLLBACK");
+	ResultSet* rs = Do("ROLLBACK");
+	if(rs) {
+		delete rs;
+		return true;
+	}
+	else
+		return false;
 }
 
 std::string DBI::PGDatabaseHandle::_process_query(std::string stmt) {

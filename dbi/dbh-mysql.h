@@ -12,6 +12,8 @@
 namespace DBI
 {
 
+ResultSet* _internal_results_from_mysql_stmt(MYSQL_STMT* statement);
+
 class MySQLDatabaseHandle : public DatabaseHandle
 {
 public:
@@ -22,10 +24,9 @@ public:
 		std::string auth, DatabaseAttributes &attr);
 	virtual bool Disconnect();
 	
-	virtual bool Do(std::string stmt);
-	virtual bool Do(std::string stmt, StatementArguments &args);
+	virtual ResultSet* Do(std::string stmt);
+	virtual ResultSet* Do(std::string stmt, StatementArguments &args);
 	virtual StatementHandle* Prepare(std::string stmt);
-	virtual std::string Quote(std::string stmt) { return _quote(stmt); }
 
 	virtual bool Ping();
 	virtual bool Begin();
@@ -33,11 +34,8 @@ public:
 	virtual bool Rollback();
 
 private:
-	bool _basic_execute(std::string stmt, StatementArguments &args);
-	bool _basic_execute_server_side(std::string stmt, StatementArguments &args);
-	std::string _quote(std::string v);
+	ResultSet* _basic_execute_server_side(std::string stmt, StatementArguments &args);
 	MYSQL *handle;
-	bool server_side_prepare;
 };
 
 }

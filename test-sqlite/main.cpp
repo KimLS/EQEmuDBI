@@ -20,8 +20,7 @@ int main() {
 
 	DBI::StatementHandle *sth = dbh->Prepare("SELECT * FROM variables WHERE varname=?");
 	if(sth) {
-		sth->Execute((const char*)"MOTD");
-		DBI::ResultSet *rs = sth->Results();
+		DBI::ResultSet *rs = sth->Execute((const char*)"MOTD");
 		auto iter = rs->Rows().begin();
 		while(iter != rs->Rows().end()) {
 			auto row = (*iter);
