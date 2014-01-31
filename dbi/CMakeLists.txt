@@ -41,11 +41,11 @@ ENDIF(MySQL_FOUND)
 
 IF(PostgreSQL_FOUND)
 	SET(dbi_sources
-		${dbi_sources} dbh-pg.cpp #sth-pg.cpp
+		${dbi_sources} dbh-pg.cpp sth-pg.cpp
 	)
 	
 	SET(dbi_headers
-		${dbi_headers} dbh-pg.h #sth-pg.h
+		${dbi_headers} dbh-pg.h sth-pg.h
 	)
 	INCLUDE_DIRECTORIES("${PostgreSQL_INCLUDE_DIRS}")
 ENDIF(PostgreSQL_FOUND)

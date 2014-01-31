@@ -1,57 +1,22 @@
-#include "dbh-pg.h"
 #include "sth-pg.h"
 #include "rs.h"
 #include <stdint.h>
 #include <assert.h>
+#include <memory>
 
-DBI::PGDatabaseHandle::PGDatabaseHandle() {
-	handle = nullptr;
+DBI::PGStatementHandle::PGStatementHandle(PGconn *conn_, std::string name_) : conn(conn_), name(name_) {
 }
 
-DBI::PGDatabaseHandle::~PGDatabaseHandle() {
-	Disconnect();
+DBI::PGStatementHandle::~PGStatementHandle() {
 }
 
-bool DBI::PGDatabaseHandle::Connect(std::string dbname, std::string host, std::string username,
-									   std::string auth, DatabaseAttributes &attr) {
-	if(handle) {
-		return false;
-	}
-	
-	std::string port;
-	auto iter = attr.find("port");
-	if(iter != attr.end()) {
-		port = iter->second;
-	}
-
-	handle = PQsetdbLogin(host.c_str(), port.c_str(), nullptr, nullptr, dbname.c_str(), username.c_str(), auth.c_str());
-	
-	if(handle) {
-		return true;
-	}
-
-	Disconnect();
-	return false;
-}
-
-bool DBI::PGDatabaseHandle::Disconnect() {
-	if(!handle)
-		return false;
-
-	PQfinish(handle);
-	handle = nullptr;
-	return true;
-}
-
-std::unique_ptr<DBI::ResultSet> DBI::PGDatabaseHandle::Do(std::string stmt) {
+std::unique_ptr<DBI::ResultSet> DBI::PGStatementHandle::Execute() {
 	StatementArguments args;
-	return Do(stmt, args);
+	return Execute(args);
 }
 
-std::unique_ptr<DBI::ResultSet> DBI::PGDatabaseHandle::Do(std::string stmt, DBI::StatementArguments &args) {
-	assert(handle != nullptr);
-	std::string query = _process_query(stmt);
-	
+std::unique_ptr<DBI::ResultSet> DBI::PGStatementHandle::Execute(StatementArguments &args) {
+	assert(conn != nullptr);
 	size_t nParams = args.size();
 	std::list<std::shared_ptr<char>> paramSave;
 	std::unique_ptr<char*> paramValues(nullptr);
@@ -78,7 +43,7 @@ std::unique_ptr<DBI::ResultSet> DBI::PGDatabaseHandle::Do(std::string stmt, DBI:
 					t.get()[1] = '\0';
 					paramSave.push_back(t);
 				} catch(DBI::bad_any_cast) {
-					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from bool arg in DBI::PGDatabaseHandle::Do(stmt, args).");
+					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from bool arg in DBI::PGStatementHandle::Execute(args).");
 					return nullptr;
 				}
 			} else if(t.type() == typeid(uint8_t)) {
@@ -93,7 +58,7 @@ std::unique_ptr<DBI::ResultSet> DBI::PGDatabaseHandle::Do(std::string stmt, DBI:
 					t.get()[len] = 0;
 					paramSave.push_back(t);
 				} catch(DBI::bad_any_cast) {
-					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from uint8_t arg in DBI::PGDatabaseHandle::Do(stmt, args).");
+					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from uint8_t arg in DBI::PGStatementHandle::Execute(args).");
 					return nullptr;
 				}
 			} else if(t.type() == typeid(int8_t)) {
@@ -108,7 +73,7 @@ std::unique_ptr<DBI::ResultSet> DBI::PGDatabaseHandle::Do(std::string stmt, DBI:
 					t.get()[len] = 0;
 					paramSave.push_back(t);
 				} catch(DBI::bad_any_cast) {
-					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from int8_t arg in DBI::PGDatabaseHandle::Do(stmt, args).");
+					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from int8_t arg in DBI::PGStatementHandle::Execute(args).");
 					return nullptr;
 				}
 			} else if(t.type() == typeid(uint16_t)) {
@@ -123,7 +88,7 @@ std::unique_ptr<DBI::ResultSet> DBI::PGDatabaseHandle::Do(std::string stmt, DBI:
 					t.get()[len] = 0;
 					paramSave.push_back(t);
 				} catch(DBI::bad_any_cast) {
-					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from uint16_t arg in DBI::PGDatabaseHandle::Do(stmt, args).");
+					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from uint16_t arg in DBI::PGStatementHandle::Execute(args).");
 					return nullptr;
 				}
 			} else if(t.type() == typeid(int16_t)) {
@@ -138,7 +103,7 @@ std::unique_ptr<DBI::ResultSet> DBI::PGDatabaseHandle::Do(std::string stmt, DBI:
 					t.get()[len] = 0;
 					paramSave.push_back(t);
 				} catch(DBI::bad_any_cast) {
-					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from int16_t arg in DBI::PGDatabaseHandle::Do(stmt, args).");
+					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from int16_t arg in DBI::PGStatementHandle::Execute(args).");
 					return nullptr;
 				}
 			} else if(t.type() == typeid(uint32_t)) {
@@ -153,7 +118,7 @@ std::unique_ptr<DBI::ResultSet> DBI::PGDatabaseHandle::Do(std::string stmt, DBI:
 					t.get()[len] = 0;
 					paramSave.push_back(t);
 				} catch(DBI::bad_any_cast) {
-					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from uint32_t arg in DBI::PGDatabaseHandle::Do(stmt, args).");
+					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from uint32_t arg in DBI::PGStatementHandle::Execute(args).");
 					return nullptr;
 				}
 			} else if(t.type() == typeid(int32_t)) {
@@ -168,7 +133,7 @@ std::unique_ptr<DBI::ResultSet> DBI::PGDatabaseHandle::Do(std::string stmt, DBI:
 					t.get()[len] = 0;
 					paramSave.push_back(t);
 				} catch(DBI::bad_any_cast) {
-					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from int32_t arg in DBI::PGDatabaseHandle::Do(stmt, args).");
+					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from int32_t arg in DBI::PGStatementHandle::Execute(args).");
 					return nullptr;
 				}
 			} else if(t.type() == typeid(uint64_t)) {
@@ -183,7 +148,7 @@ std::unique_ptr<DBI::ResultSet> DBI::PGDatabaseHandle::Do(std::string stmt, DBI:
 					t.get()[len] = 0;
 					paramSave.push_back(t);
 				} catch(DBI::bad_any_cast) {
-					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from uint64_t arg in DBI::PGDatabaseHandle::Do(stmt, args).");
+					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from uint64_t arg in DBI::PGStatementHandle::Execute(args).");
 					return nullptr;
 				}
 			} else if(t.type() == typeid(int64_t)) {
@@ -198,7 +163,7 @@ std::unique_ptr<DBI::ResultSet> DBI::PGDatabaseHandle::Do(std::string stmt, DBI:
 					t.get()[len] = 0;
 					paramSave.push_back(t);
 				} catch(DBI::bad_any_cast) {
-					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from int64_t arg in DBI::PGDatabaseHandle::Do(stmt, args).");
+					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from int64_t arg in DBI::PGStatementHandle::Execute(args).");
 					return nullptr;
 				}
 			} else if(t.type() == typeid(float)) {
@@ -213,7 +178,7 @@ std::unique_ptr<DBI::ResultSet> DBI::PGDatabaseHandle::Do(std::string stmt, DBI:
 					t.get()[len] = 0;
 					paramSave.push_back(t);
 				} catch(DBI::bad_any_cast) {
-					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from float arg in DBI::PGDatabaseHandle::Do(stmt, args).");
+					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from float arg in DBI::PGStatementHandle::Execute(args).");
 					return nullptr;
 				}
 			} else if(t.type() == typeid(double)) {
@@ -228,7 +193,7 @@ std::unique_ptr<DBI::ResultSet> DBI::PGDatabaseHandle::Do(std::string stmt, DBI:
 					t.get()[len] = 0;
 					paramSave.push_back(t);
 				} catch(DBI::bad_any_cast) {
-					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from double arg in DBI::PGDatabaseHandle::Do(stmt, args).");
+					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from double arg in DBI::PGStatementHandle::Execute(args).");
 					return nullptr;
 				}
 			} else if(t.type() == typeid(std::string)) {
@@ -242,7 +207,7 @@ std::unique_ptr<DBI::ResultSet> DBI::PGDatabaseHandle::Do(std::string stmt, DBI:
 					t.get()[len] = 0;
 					paramSave.push_back(t);
 				} catch(DBI::bad_any_cast) {
-					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from std::string arg in DBI::PGDatabaseHandle::Do(stmt, args).");
+					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from std::string arg in DBI::PGStatementHandle::Execute(args).");
 					return nullptr;
 				}
 			} else if(t.type() == typeid(const char*)) {
@@ -256,160 +221,27 @@ std::unique_ptr<DBI::ResultSet> DBI::PGDatabaseHandle::Do(std::string stmt, DBI:
 					t.get()[len] = 0;
 					paramSave.push_back(t);
 				} catch(DBI::bad_any_cast) {
-					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from const char* arg in DBI::PGDatabaseHandle::Do(stmt, args).");
+					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from const char* arg in DBI::PGStatementHandle::Execute(args).");
 					return nullptr;
 				}
 			} else if(!t.empty() && t.type() != typeid(std::nullptr_t)) {
-				SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from unknown arg in DBI::PGDatabaseHandle::Do(stmt, args).");
+				SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from unknown arg in DBI::PGStatementHandle::Execute(args).");
 				return nullptr;
 			}
 		}
 	}
 
-	PGresult *res = PQexecParams(handle, query.c_str(), (int)nParams, nullptr, paramValues.get(), nullptr, nullptr, 0); 
+	PGresult *res = PQexecPrepared(conn, name.c_str(), (int)nParams, paramValues.get(), nullptr, nullptr, 0);
 	
 	std::unique_ptr<ResultSet> rs = _internal_results_from_postgresql(res);
-
 	if(rs) {
 		PQclear(res);
 		return rs;
 	}
-
+	
 	std::string err = "PG Error: ";
 	char *err_str = PQresultErrorMessage(res);
 	err += err_str;
-	SetError(DBH_ERROR_QUERY, err);
-
-	PQclear(res);
-	return nullptr;
-}
-
-std::unique_ptr<DBI::StatementHandle> DBI::PGDatabaseHandle::Prepare(std::string stmt, std::string name) {
-	assert(handle != nullptr);
-	int params = 0;
-	std::string query = _process_query(stmt, &params);
-
-	PGresult * res = PQprepare(handle, name.c_str(), query.c_str(), params, nullptr); 
-	if(PQresultStatus(res) == PGRES_TUPLES_OK || PQresultStatus(res) == PGRES_COMMAND_OK) {
-		PQclear(res);
-		
-		std::unique_ptr<DBI::StatementHandle> st(new DBI::PGStatementHandle(handle, name));
-		return st;
-	}
-
-	PQclear(res);
-	return nullptr;
-}
-
-bool DBI::PGDatabaseHandle::Ping() {
-	assert(handle != nullptr);
-	
-	if(PQstatus(handle) != CONNECTION_OK)
-	{
-		PQreset(handle);
-		if(PQstatus(handle) != CONNECTION_OK)
-		{
-			return false;
-		}
-	}
-
-	return true;
-}
-
-bool DBI::PGDatabaseHandle::Begin() {
-	assert(handle != nullptr);
-	std::unique_ptr<ResultSet> rs(Do("BEGIN"));
-	if(rs) {
-		return true;
-	}
-	else
-		return false;
-}
-
-bool DBI::PGDatabaseHandle::Commit() {
-	assert(handle != nullptr);
-	std::unique_ptr<ResultSet> rs(Do("COMMIT"));
-	if(rs) {
-		return true;
-	}
-	else
-		return false;
-}
-
-bool DBI::PGDatabaseHandle::Rollback() {
-	assert(handle != nullptr);
-	std::unique_ptr<ResultSet> rs(Do("ROLLBACK"));
-	if(rs) {
-		return true;
-	}
-	else
-		return false;
-}
-
-std::string DBI::PGDatabaseHandle::_process_query(std::string stmt, int *params) {
-	std::string ret;
-	size_t sz = stmt.size();
-	size_t current = 1;
-	bool escaped = false;
-
-	if(params)
-		*params = 0;
-
-	for(size_t i = 0; i < sz; ++i) {
-		char c = stmt[i];
-		if(escaped) {
-			ret.push_back(c);
-			escaped = false;
-		} else if(c == '\\') {
-			ret.push_back(c);
-			escaped = true;
-		} else if(c == '?') {
-			ret.push_back('$');
-			ret += std::to_string((unsigned long)current++);
-			if(params)
-				*params = *params + 1;
-		} else if(c == '$') {
-			ret.push_back('\\');
-			ret.push_back(c);
-		} else {
-			ret.push_back(c);
-		}
-	}
-
-	return ret;
-}
-
-std::unique_ptr<DBI::ResultSet> DBI::_internal_results_from_postgresql(PGresult* res) {
-	assert(res != nullptr);
-	if(PQresultStatus(res) == PGRES_TUPLES_OK || PQresultStatus(res) == PGRES_COMMAND_OK) {
-		std::vector<std::string> field_names;
-		std::list<DBI::ResultSet::Row> rows;
-		int field_c = PQnfields(res);
-		int row_c = PQntuples(res);
-		for(int i = 0; i < field_c; ++i) {
-			field_names.push_back(PQfname(res, i));
-		}
-
-		for(int r = 0; r < row_c; ++r) {
-			DBI::ResultSet::Row row;
-			for(int f = 0; f < field_c; ++f) {
-				DBI::ResultSet::FieldData fd;
-				fd.error = false;
-				if(PQgetisnull(res, r, f)) {
-					fd.is_null = true;
-				} else {
-					fd.is_null = false;
-					fd.value = PQgetvalue(res, r, f);
-				}
-
-				row[PQfname(res, f)] = fd;
-			}
-			rows.push_back(row);
-		}
-
-		std::unique_ptr<DBI::ResultSet> rs(new DBI::ResultSet(field_names, rows));
-
-		return rs;
-	}
+	SetError(STH_ERROR_STMT_FAILURE, err);
 	return nullptr;
 }

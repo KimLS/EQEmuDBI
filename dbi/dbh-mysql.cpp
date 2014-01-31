@@ -481,7 +481,7 @@ std::unique_ptr<DBI::ResultSet> DBI::MySQLDatabaseHandle::_basic_execute_server_
 	}
 }
 
-std::unique_ptr<DBI::StatementHandle> DBI::MySQLDatabaseHandle::Prepare(std::string stmt) {
+std::unique_ptr<DBI::StatementHandle> DBI::MySQLDatabaseHandle::Prepare(std::string stmt, std::string name) {
 	assert(handle != nullptr);
 	MYSQL_STMT *my_stmt = mysql_stmt_init(handle);
 	if(mysql_stmt_prepare(my_stmt, stmt.c_str(), static_cast<unsigned long>(stmt.length()))) {		

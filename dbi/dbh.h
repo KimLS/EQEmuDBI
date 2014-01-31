@@ -37,7 +37,7 @@ public:
 	virtual std::unique_ptr<ResultSet> Do(std::string stmt, DBI::Any arg0, DBI::Any arg1, DBI::Any arg2, DBI::Any arg3, DBI::Any arg4, DBI::Any arg5,
 		DBI::Any arg6, DBI::Any arg7, DBI::Any arg8, DBI::Any arg9);
 
-	virtual std::unique_ptr<StatementHandle> Prepare(std::string stmt) = 0;
+	virtual std::unique_ptr<StatementHandle> Prepare(std::string stmt, std::string name) = 0;
 
 	virtual bool Ping() = 0;
 	virtual bool Begin() = 0;

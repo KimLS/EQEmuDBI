@@ -18,7 +18,7 @@ int main() {
 		return 0;
 	}
 
-	auto sth = dbh->Prepare("SELECT * FROM variables WHERE varname=?");
+	auto sth = dbh->Prepare("SELECT * FROM variables WHERE varname=?", "Select Variable");
 	if(sth) {
 		auto rs = sth->Execute((const char*)"MOTD");
 		auto iter = rs->Rows().begin();
