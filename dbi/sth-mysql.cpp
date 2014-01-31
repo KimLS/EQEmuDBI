@@ -12,12 +12,12 @@ DBI::MySQLStatementHandle::~MySQLStatementHandle() {
 		mysql_stmt_close(statement);
 }
 
-DBI::ResultSet* DBI::MySQLStatementHandle::Execute() {
+std::unique_ptr<DBI::ResultSet> DBI::MySQLStatementHandle::Execute() {
 	StatementArguments args;
 	return Execute(args);
 }
 
-DBI::ResultSet* DBI::MySQLStatementHandle::Execute(StatementArguments &args) {
+std::unique_ptr<DBI::ResultSet> DBI::MySQLStatementHandle::Execute(StatementArguments &args) {
 	assert(statement != nullptr);
 	std::unique_ptr<MYSQL_BIND> params(nullptr);
 	size_t argc = args.size();
@@ -280,6 +280,6 @@ DBI::ResultSet* DBI::MySQLStatementHandle::Execute(StatementArguments &args) {
 		}		
 	}
 
-	ResultSet *res = DBI::_internal_results_from_mysql_stmt(statement);
+	std::unique_ptr<ResultSet> res(DBI::_internal_results_from_mysql_stmt(statement));
 	return res;
 }

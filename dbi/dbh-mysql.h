@@ -12,7 +12,7 @@
 namespace DBI
 {
 
-ResultSet* _internal_results_from_mysql_stmt(MYSQL_STMT* statement);
+std::unique_ptr<ResultSet> _internal_results_from_mysql_stmt(MYSQL_STMT* statement);
 
 class MySQLDatabaseHandle : public DatabaseHandle
 {
@@ -24,9 +24,9 @@ public:
 		std::string auth, DatabaseAttributes &attr);
 	virtual bool Disconnect();
 	
-	virtual ResultSet* Do(std::string stmt);
-	virtual ResultSet* Do(std::string stmt, StatementArguments &args);
-	virtual StatementHandle* Prepare(std::string stmt);
+	virtual std::unique_ptr<ResultSet> Do(std::string stmt);
+	virtual std::unique_ptr<ResultSet> Do(std::string stmt, StatementArguments &args);
+	virtual std::unique_ptr<StatementHandle> Prepare(std::string stmt);
 
 	virtual bool Ping();
 	virtual bool Begin();
@@ -34,7 +34,7 @@ public:
 	virtual bool Rollback();
 
 private:
-	ResultSet* _basic_execute_server_side(std::string stmt, StatementArguments &args);
+	std::unique_ptr<ResultSet> _basic_execute_server_side(std::string stmt, StatementArguments &args);
 	MYSQL *handle;
 };
 

@@ -8,7 +8,7 @@ int main() {
 	DBI::DatabaseAttributes attr;
 	attr["mysql_reconnect"] = "1";
 
-	DBI::DatabaseHandle *dbh = DBI::DatabaseInterface::Instance()->Connect("mysql", "eqdb", "127.0.0.1", "root", "", attr);
+	auto dbh = DBI::DatabaseInterface::Instance()->Connect("mysql", "eqdb", "127.0.0.1", "root", "", attr);
 	if(dbh) {
 		printf("Connected...\n");
 	} else {
@@ -17,15 +17,15 @@ int main() {
 		return 0;
 	}
 
-	DBI::MySQLResultSet *rs = (DBI::MySQLResultSet*)dbh->Do("UPDATE variables SET information = ? WHERE varname = ?", 
+	auto rs = dbh->Do("UPDATE variables SET information = ? WHERE varname = ?", 
 		(const char*)"Some really crazy info here...", (const char*)"MOTD");
 	if(rs) {
-		printf("Affected rows: %d\n", rs->AffectedRows());
+		printf("Affected rows: %d\n", ((DBI::MySQLResultSet*)rs.get())->AffectedRows());
 	}
 
-	DBI::StatementHandle *sth = dbh->Prepare("SELECT * FROM variables WHERE varname=?");
+	auto sth = dbh->Prepare("SELECT * FROM variables WHERE varname=?");
 	if(sth) {
-		DBI::ResultSet *rs = sth->Execute((const char*)"MOTD");
+		auto rs = sth->Execute((const char*)"MOTD");
 		auto iter = rs->Rows().begin();
 		while(iter != rs->Rows().end()) {
 			auto row = (*iter);
@@ -42,3 +42,4 @@ int main() {
 	getchar();
 	return 0;
 }
+	

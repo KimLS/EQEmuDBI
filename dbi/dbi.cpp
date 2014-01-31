@@ -40,31 +40,29 @@ void DBI::DatabaseInterface::Drivers(std::list<std::string> &drivers) {
 #endif
 }
 
-DBI::DatabaseHandle* DBI::DatabaseInterface::Connect(std::string driver, std::string dbname, std::string host, 
+std::unique_ptr<DBI::DatabaseHandle> DBI::DatabaseInterface::Connect(std::string driver, std::string dbname, std::string host, 
 													 std::string username, std::string auth, DatabaseAttributes &attr) 
 {
 #ifdef MYSQL_ENGINE
 	if(driver.compare("mysql") == 0) {
-		DBI::DatabaseHandle *dbh = new MySQLDatabaseHandle();
+		std::unique_ptr<DBI::DatabaseHandle> dbh(new MySQLDatabaseHandle());
 		if(dbh->Connect(dbname, host, username, auth, attr)) {
 			return dbh;
 		}
 		
 		SetError(DBI_ERROR_FAILED_TO_CONNECT, "Failed to connect to the selected MySQL Database.");
-		delete dbh;
 		return nullptr;
 	}
 #endif
 
 #ifdef POSTGRESQL_ENGINE
 	if(driver.compare("postgresql") == 0) {
-		DBI::DatabaseHandle *dbh = new PGDatabaseHandle();
+		std::unique_ptr<DBI::DatabaseHandle> dbh(new PGDatabaseHandle());
 		if(dbh->Connect(dbname, host, username, auth, attr)) {
 			return dbh;
 		}
 		
 		SetError(DBI_ERROR_FAILED_TO_CONNECT, "Failed to connect to the selected PostgreSQL Database.");
-		delete dbh;
 		return nullptr;
 	}
 #endif

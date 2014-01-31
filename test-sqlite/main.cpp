@@ -9,7 +9,7 @@ int main() {
 	attr["mysql_reconnect"] = "1";
 	attr["mysql_server_side_prepare"]  = "1";
 
-	DBI::DatabaseHandle *dbh = DBI::DatabaseInterface::Instance()->Connect("sqlite", "eqdb", "127.0.0.1", "root", "", attr);
+	auto dbh = DBI::DatabaseInterface::Instance()->Connect("sqlite", "eqdb", "127.0.0.1", "root", "", attr);
 	if(dbh) {
 		printf("Connected...\n");
 	} else {
@@ -18,9 +18,9 @@ int main() {
 		return 0;
 	}
 
-	DBI::StatementHandle *sth = dbh->Prepare("SELECT * FROM variables WHERE varname=?");
+	auto sth = dbh->Prepare("SELECT * FROM variables WHERE varname=?");
 	if(sth) {
-		DBI::ResultSet *rs = sth->Execute((const char*)"MOTD");
+		auto rs = sth->Execute((const char*)"MOTD");
 		auto iter = rs->Rows().begin();
 		while(iter != rs->Rows().end()) {
 			auto row = (*iter);

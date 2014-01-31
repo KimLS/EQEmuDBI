@@ -3,7 +3,6 @@
 #include "rs.h"
 #include <stdint.h>
 #include <assert.h>
-#include <memory>
 
 DBI::PGDatabaseHandle::PGDatabaseHandle() {
 	handle = nullptr;
@@ -44,12 +43,12 @@ bool DBI::PGDatabaseHandle::Disconnect() {
 	return true;
 }
 
-DBI::ResultSet* DBI::PGDatabaseHandle::Do(std::string stmt) {
+std::unique_ptr<DBI::ResultSet> DBI::PGDatabaseHandle::Do(std::string stmt) {
 	StatementArguments args;
 	return Do(stmt, args);
 }
 
-DBI::ResultSet* DBI::PGDatabaseHandle::Do(std::string stmt, DBI::StatementArguments &args) {
+std::unique_ptr<DBI::ResultSet> DBI::PGDatabaseHandle::Do(std::string stmt, DBI::StatementArguments &args) {
 	assert(handle != nullptr);
 	std::string query = _process_query(stmt);
 	
@@ -273,7 +272,7 @@ DBI::ResultSet* DBI::PGDatabaseHandle::Do(std::string stmt, DBI::StatementArgume
 		PQclear(res);
 
 		//pg doesn't have a working result set yet, will change sometime in the next day but still todo incase it takes me longer:
-		ResultSet *rs = new ResultSet();
+		std::unique_ptr<ResultSet> rs(new ResultSet());
 		return rs;
 	}
 
@@ -286,7 +285,7 @@ DBI::ResultSet* DBI::PGDatabaseHandle::Do(std::string stmt, DBI::StatementArgume
 	return nullptr;
 }
 
-DBI::StatementHandle* DBI::PGDatabaseHandle::Prepare(std::string stmt) {
+std::unique_ptr<DBI::StatementHandle> DBI::PGDatabaseHandle::Prepare(std::string stmt) {
 	assert(handle != nullptr);
 	return nullptr;
 }
@@ -308,9 +307,8 @@ bool DBI::PGDatabaseHandle::Ping() {
 
 bool DBI::PGDatabaseHandle::Begin() {
 	assert(handle != nullptr);
-	ResultSet* rs = Do("BEGIN");
+	std::unique_ptr<ResultSet> rs(Do("BEGIN"));
 	if(rs) {
-		delete rs;
 		return true;
 	}
 	else
@@ -319,9 +317,8 @@ bool DBI::PGDatabaseHandle::Begin() {
 
 bool DBI::PGDatabaseHandle::Commit() {
 	assert(handle != nullptr);
-	ResultSet* rs = Do("COMMIT");
+	std::unique_ptr<ResultSet> rs(Do("COMMIT"));
 	if(rs) {
-		delete rs;
 		return true;
 	}
 	else
@@ -330,9 +327,8 @@ bool DBI::PGDatabaseHandle::Commit() {
 
 bool DBI::PGDatabaseHandle::Rollback() {
 	assert(handle != nullptr);
-	ResultSet* rs = Do("ROLLBACK");
+	std::unique_ptr<ResultSet> rs(Do("ROLLBACK"));
 	if(rs) {
-		delete rs;
 		return true;
 	}
 	else

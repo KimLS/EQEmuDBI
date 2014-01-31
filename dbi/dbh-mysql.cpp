@@ -3,7 +3,6 @@
 #include "rs-mysql.h"
 #include <stdint.h>
 #include <assert.h>
-#include <memory>
 
 DBI::MySQLDatabaseHandle::MySQLDatabaseHandle() {
 	handle = nullptr;
@@ -216,16 +215,16 @@ bool DBI::MySQLDatabaseHandle::Disconnect() {
 	return true;
 }
 
-DBI::ResultSet* DBI::MySQLDatabaseHandle::Do(std::string stmt) {
+std::unique_ptr<DBI::ResultSet> DBI::MySQLDatabaseHandle::Do(std::string stmt) {
 	StatementArguments args;
 	return Do(stmt, args);
 }
 
-DBI::ResultSet* DBI::MySQLDatabaseHandle::Do(std::string stmt, DBI::StatementArguments &args) {
+std::unique_ptr<DBI::ResultSet> DBI::MySQLDatabaseHandle::Do(std::string stmt, DBI::StatementArguments &args) {
 	return _basic_execute_server_side(stmt, args);
 }
 
-DBI::ResultSet* DBI::MySQLDatabaseHandle::_basic_execute_server_side(std::string stmt, DBI::StatementArguments &args) {
+std::unique_ptr<DBI::ResultSet> DBI::MySQLDatabaseHandle::_basic_execute_server_side(std::string stmt, DBI::StatementArguments &args) {
 	assert(handle != nullptr);
 	MYSQL_STMT *my_stmt = mysql_stmt_init(handle);
 	if(mysql_stmt_prepare(my_stmt, stmt.c_str(), static_cast<unsigned long>(stmt.length()))) {
@@ -476,13 +475,13 @@ DBI::ResultSet* DBI::MySQLDatabaseHandle::_basic_execute_server_side(std::string
 			}		
 		}
 
-		ResultSet *res = DBI::_internal_results_from_mysql_stmt(my_stmt);
+		std::unique_ptr<ResultSet> res(DBI::_internal_results_from_mysql_stmt(my_stmt));
 		mysql_stmt_close(my_stmt);
 		return res;
 	}
 }
 
-DBI::StatementHandle* DBI::MySQLDatabaseHandle::Prepare(std::string stmt) {
+std::unique_ptr<DBI::StatementHandle> DBI::MySQLDatabaseHandle::Prepare(std::string stmt) {
 	assert(handle != nullptr);
 	MYSQL_STMT *my_stmt = mysql_stmt_init(handle);
 	if(mysql_stmt_prepare(my_stmt, stmt.c_str(), static_cast<unsigned long>(stmt.length()))) {		
@@ -491,7 +490,7 @@ DBI::StatementHandle* DBI::MySQLDatabaseHandle::Prepare(std::string stmt) {
 		return nullptr;
 	}
 
-	MySQLStatementHandle *sth = new MySQLStatementHandle(my_stmt);
+	std::unique_ptr<StatementHandle> sth(new MySQLStatementHandle(my_stmt));
 	return sth;
 }
 
@@ -539,7 +538,7 @@ bool DBI::MySQLDatabaseHandle::Rollback() {
 	return true;
 }
 
-DBI::ResultSet* DBI::_internal_results_from_mysql_stmt(MYSQL_STMT* statement) {
+std::unique_ptr<DBI::ResultSet> DBI::_internal_results_from_mysql_stmt(MYSQL_STMT* statement) {
 	assert(statement != nullptr);
 	MYSQL_RES *res = mysql_stmt_result_metadata(statement);
 	std::vector<std::unique_ptr<char>> buffers;
@@ -602,9 +601,8 @@ DBI::ResultSet* DBI::_internal_results_from_mysql_stmt(MYSQL_STMT* statement) {
 		rows.push_back(row);
 	}
 
-	MySQLResultSet *rs = new MySQLResultSet(field_names, rows,
+	std::unique_ptr<ResultSet> rs(new MySQLResultSet(field_names, rows,
 		static_cast<unsigned long>(mysql_stmt_affected_rows(statement)),
-		static_cast<unsigned long>(mysql_stmt_insert_id(statement)));
-
+		static_cast<unsigned long>(mysql_stmt_insert_id(statement))));
 	return rs;
 }

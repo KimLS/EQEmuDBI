@@ -17,9 +17,9 @@ public:
 		std::string auth, DatabaseAttributes &attr);
 	virtual bool Disconnect();
 	
-	virtual ResultSet* Do(std::string stmt);
-	virtual ResultSet* Do(std::string stmt, StatementArguments &args);
-	virtual StatementHandle* Prepare(std::string stmt);
+	virtual std::unique_ptr<ResultSet> Do(std::string stmt);
+	virtual std::unique_ptr<ResultSet> Do(std::string stmt, StatementArguments &args);
+	virtual std::unique_ptr<StatementHandle> Prepare(std::string stmt);
 
 	virtual bool Ping();
 	virtual bool Begin();

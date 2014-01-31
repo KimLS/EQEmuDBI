@@ -1,19 +1,20 @@
 #include "sth.h"
+#include "rs.h"
 
-DBI::ResultSet* DBI::StatementHandle::Execute(DBI::Any arg0) {
+std::unique_ptr<DBI::ResultSet> DBI::StatementHandle::Execute(DBI::Any arg0) {
 	StatementArguments args;
 	args.push_back(arg0);
 	return Execute(args);
 }
 
-DBI::ResultSet* DBI::StatementHandle::Execute(DBI::Any arg0, DBI::Any arg1) {
+std::unique_ptr<DBI::ResultSet> DBI::StatementHandle::Execute(DBI::Any arg0, DBI::Any arg1) {
 	StatementArguments args;
 	args.push_back(arg0);
 	args.push_back(arg1);
 	return Execute(args);
 }
 
-DBI::ResultSet* DBI::StatementHandle::Execute(DBI::Any arg0, DBI::Any arg1, DBI::Any arg2) {
+std::unique_ptr<DBI::ResultSet> DBI::StatementHandle::Execute(DBI::Any arg0, DBI::Any arg1, DBI::Any arg2) {
 	StatementArguments args;
 	args.push_back(arg0);
 	args.push_back(arg1);
@@ -21,7 +22,7 @@ DBI::ResultSet* DBI::StatementHandle::Execute(DBI::Any arg0, DBI::Any arg1, DBI:
 	return Execute(args);
 }
 
-DBI::ResultSet* DBI::StatementHandle::Execute(DBI::Any arg0, DBI::Any arg1, DBI::Any arg2, DBI::Any arg3) {
+std::unique_ptr<DBI::ResultSet> DBI::StatementHandle::Execute(DBI::Any arg0, DBI::Any arg1, DBI::Any arg2, DBI::Any arg3) {
 	StatementArguments args;
 	args.push_back(arg0);
 	args.push_back(arg1);
@@ -30,7 +31,7 @@ DBI::ResultSet* DBI::StatementHandle::Execute(DBI::Any arg0, DBI::Any arg1, DBI:
 	return Execute(args);
 }
 
-DBI::ResultSet* DBI::StatementHandle::Execute(DBI::Any arg0, DBI::Any arg1, DBI::Any arg2, DBI::Any arg3, DBI::Any arg4) {
+std::unique_ptr<DBI::ResultSet> DBI::StatementHandle::Execute(DBI::Any arg0, DBI::Any arg1, DBI::Any arg2, DBI::Any arg3, DBI::Any arg4) {
 	StatementArguments args;
 	args.push_back(arg0);
 	args.push_back(arg1);
@@ -40,7 +41,7 @@ DBI::ResultSet* DBI::StatementHandle::Execute(DBI::Any arg0, DBI::Any arg1, DBI:
 	return Execute(args);
 }
 
-DBI::ResultSet* DBI::StatementHandle::Execute(DBI::Any arg0, DBI::Any arg1, DBI::Any arg2, DBI::Any arg3, DBI::Any arg4, DBI::Any arg5) {
+std::unique_ptr<DBI::ResultSet> DBI::StatementHandle::Execute(DBI::Any arg0, DBI::Any arg1, DBI::Any arg2, DBI::Any arg3, DBI::Any arg4, DBI::Any arg5) {
 	StatementArguments args;
 	args.push_back(arg0);
 	args.push_back(arg1);
@@ -51,7 +52,7 @@ DBI::ResultSet* DBI::StatementHandle::Execute(DBI::Any arg0, DBI::Any arg1, DBI:
 	return Execute(args);
 }
 
-DBI::ResultSet* DBI::StatementHandle::Execute(DBI::Any arg0, DBI::Any arg1, DBI::Any arg2, DBI::Any arg3, DBI::Any arg4, DBI::Any arg5,
+std::unique_ptr<DBI::ResultSet> DBI::StatementHandle::Execute(DBI::Any arg0, DBI::Any arg1, DBI::Any arg2, DBI::Any arg3, DBI::Any arg4, DBI::Any arg5,
 	DBI::Any arg6) {
 	StatementArguments args;
 	args.push_back(arg0);
@@ -64,7 +65,7 @@ DBI::ResultSet* DBI::StatementHandle::Execute(DBI::Any arg0, DBI::Any arg1, DBI:
 	return Execute(args);
 }
 
-DBI::ResultSet* DBI::StatementHandle::Execute(DBI::Any arg0, DBI::Any arg1, DBI::Any arg2, DBI::Any arg3, DBI::Any arg4, DBI::Any arg5,
+std::unique_ptr<DBI::ResultSet> DBI::StatementHandle::Execute(DBI::Any arg0, DBI::Any arg1, DBI::Any arg2, DBI::Any arg3, DBI::Any arg4, DBI::Any arg5,
 	DBI::Any arg6, DBI::Any arg7) {
 	StatementArguments args;
 	args.push_back(arg0);
@@ -78,7 +79,7 @@ DBI::ResultSet* DBI::StatementHandle::Execute(DBI::Any arg0, DBI::Any arg1, DBI:
 	return Execute(args);
 }
 
-DBI::ResultSet* DBI::StatementHandle::Execute(DBI::Any arg0, DBI::Any arg1, DBI::Any arg2, DBI::Any arg3, DBI::Any arg4, DBI::Any arg5,
+std::unique_ptr<DBI::ResultSet> DBI::StatementHandle::Execute(DBI::Any arg0, DBI::Any arg1, DBI::Any arg2, DBI::Any arg3, DBI::Any arg4, DBI::Any arg5,
 	DBI::Any arg6, DBI::Any arg7, DBI::Any arg8) {
 	StatementArguments args;
 	args.push_back(arg0);
@@ -93,7 +94,7 @@ DBI::ResultSet* DBI::StatementHandle::Execute(DBI::Any arg0, DBI::Any arg1, DBI:
 	return Execute(args);
 }
 
-DBI::ResultSet* DBI::StatementHandle::Execute(DBI::Any arg0, DBI::Any arg1, DBI::Any arg2, DBI::Any arg3, DBI::Any arg4, DBI::Any arg5,
+std::unique_ptr<DBI::ResultSet> DBI::StatementHandle::Execute(DBI::Any arg0, DBI::Any arg1, DBI::Any arg2, DBI::Any arg3, DBI::Any arg4, DBI::Any arg5,
 	DBI::Any arg6, DBI::Any arg7, DBI::Any arg8, DBI::Any arg9) {
 	StatementArguments args;
 	args.push_back(arg0);

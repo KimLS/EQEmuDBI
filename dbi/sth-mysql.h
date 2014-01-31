@@ -15,8 +15,8 @@ public:
 	MySQLStatementHandle(MYSQL_STMT *stmt);
 	virtual ~MySQLStatementHandle();
 	
-	virtual ResultSet* Execute();
-	virtual ResultSet* Execute(StatementArguments &args);
+	virtual std::unique_ptr<ResultSet> Execute();
+	virtual std::unique_ptr<ResultSet> Execute(StatementArguments &args);
 private:
 	MYSQL_STMT *statement;
 };
