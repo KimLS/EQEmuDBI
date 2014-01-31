@@ -22,28 +22,24 @@ public:
 
 	typedef std::map<std::string, FieldData> Row;
 
-	ResultSet(std::vector<std::string> n_fields, std::list<Row> n_rows,
-		unsigned long n_affected_rows, unsigned long n_num_rows, unsigned long n_last_insert_id) 
+	ResultSet()
+	{
+	}
+
+	ResultSet(std::vector<std::string> n_fields, std::list<Row> n_rows) 
 	{
 		fields = n_fields;
 		rows = n_rows;
-		affected_rows = n_affected_rows;
-		num_rows = n_num_rows;
-		last_insert_id = n_last_insert_id;
 	}
 	virtual ~ResultSet() { }
 	
-	virtual const std::vector<std::string>& Fields() const { return fields; }
-	virtual const std::list<Row>& Rows() const { return rows; }
-	virtual unsigned long AffectedRows() const { return affected_rows; }
-	virtual unsigned long RowCount() const { return num_rows; }
-	virtual unsigned long LastInsertId() const { return last_insert_id; }
-private:
+	const std::vector<std::string>& Fields() const { return fields; }
+	const std::string FieldByID(unsigned int id) { return fields[id]; }
+	const std::list<Row>& Rows() const { return rows; }
+	size_t RowCount() const { return rows.size(); }
+protected:
 	std::vector<std::string> fields;
 	std::list<Row> rows;
-	unsigned long affected_rows;
-	unsigned long num_rows;
-	unsigned long last_insert_id;
 };
 
 }
