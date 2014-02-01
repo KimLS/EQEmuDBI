@@ -1,24 +1,19 @@
-#ifndef DBI__DBH_MYSQL_H
-#define DBI__DBH_MYSQL_H
+#ifndef DBI__DBH_SQLITE_H
+#define DBI__DBH_SQLITE_H
 
 #include "dbh.h"
-#ifdef _WIN32
-#include <Windows.h>
-#endif
-#include <mysql.h>
-#include <mysqld_error.h>
-#include <errmsg.h>
+#include "sqlite3.h"
 
 namespace DBI
 {
 
-std::unique_ptr<ResultSet> _internal_results_from_mysql_stmt(MYSQL_STMT* statement);
+std::unique_ptr<ResultSet> _internal_results_from_sqlite();
 
-class MySQLDatabaseHandle : public DatabaseHandle
+class SQLiteDatabaseHandle : public DatabaseHandle
 {
 public:
-	MySQLDatabaseHandle();
-	virtual ~MySQLDatabaseHandle();
+	SQLiteDatabaseHandle();
+	virtual ~SQLiteDatabaseHandle();
 	
 	virtual bool Connect(std::string dbname, std::string host, std::string username,
 		std::string auth, DatabaseAttributes &attr);
@@ -34,8 +29,7 @@ public:
 	virtual bool Rollback();
 
 private:
-	std::unique_ptr<ResultSet> _basic_execute_server_side(std::string stmt, StatementArguments &args);
-	MYSQL *handle;
+	sqlite3 *handle;
 };
 
 }

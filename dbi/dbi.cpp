@@ -8,7 +8,7 @@
 #endif
 
 #ifdef SQLITE_ENGINE
-//#include "dbh-sqlite.h"
+#include "dbh-sqlite.h"
 #endif
 
 DBI::DatabaseInterface* DBI::DatabaseInterface::_instance = nullptr;
@@ -69,13 +69,12 @@ std::unique_ptr<DBI::DatabaseHandle> DBI::DatabaseInterface::Connect(std::string
 
 #ifdef SQLITE_ENGINE
 	if(driver.compare("sqlite") == 0) {
-		//DBI::DatabaseHandle *dbh = new SQLiteDatabaseHandle();
-		//if(dbh->Connect(dbname, host, username, auth, attr)) {
-		//	return dbh;
-		//}
-		//
-		//SetError(DBI_ERROR_FAILED_TO_CONNECT, "Failed to connect to the selected MySQL Database.");
-		//delete dbh;
+		std::unique_ptr<DBI::DatabaseHandle> dbh(new SQLiteDatabaseHandle());
+		if(dbh->Connect(dbname, host, username, auth, attr)) {
+			return dbh;
+		}
+		
+		SetError(DBI_ERROR_FAILED_TO_CONNECT, "Failed to connect to the selected SQLite Database.");
 		return nullptr;
 	}
 #endif

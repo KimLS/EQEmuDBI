@@ -21,7 +21,7 @@ public:
 	
 	virtual std::unique_ptr<ResultSet> Do(std::string stmt);
 	virtual std::unique_ptr<ResultSet> Do(std::string stmt, StatementArguments &args);
-	virtual std::unique_ptr<StatementHandle> Prepare(std::string stmt, std::string name);
+	virtual std::unique_ptr<StatementHandle> Prepare(std::string stmt);
 
 	virtual bool Ping();
 	virtual bool Begin();

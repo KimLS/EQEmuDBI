@@ -45,10 +45,24 @@ int main() {
 	//	printf("Error: %s\n", dbh->ErrorMessage().c_str());
 	//}
 
-	auto sth = dbh->Prepare("SELECT * FROM variables WHERE varname=?", "Select Variable");
+	auto sth = dbh->Prepare("SELECT * FROM variables WHERE varname=?");
 	if(sth) {
 		auto rs = sth->Execute((const char*)"MOTD");
 		auto iter = rs->Rows().begin();
+		while(iter != rs->Rows().end()) {
+			auto row = (*iter);
+			printf("\n");
+			
+			auto fields = rs->Fields();
+			for(int i = 0; i < row.size(); ++i) {
+				printf("null = %s: %s\n", row[fields[i]].is_null ? "true" : "false", row[fields[i]].value.c_str());
+			}
+			++iter;
+		}
+
+		printf("execute again\n");
+		rs = sth->Execute((const char*)"MOTD");
+		iter = rs->Rows().begin();
 		while(iter != rs->Rows().end()) {
 			auto row = (*iter);
 			printf("\n");

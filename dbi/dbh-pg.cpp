@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <assert.h>
 
+static uint32_t statement_index = 0;
+
 DBI::PGDatabaseHandle::PGDatabaseHandle() {
 	handle = nullptr;
 }
@@ -284,10 +286,14 @@ std::unique_ptr<DBI::ResultSet> DBI::PGDatabaseHandle::Do(std::string stmt, DBI:
 	return nullptr;
 }
 
-std::unique_ptr<DBI::StatementHandle> DBI::PGDatabaseHandle::Prepare(std::string stmt, std::string name) {
+std::unique_ptr<DBI::StatementHandle> DBI::PGDatabaseHandle::Prepare(std::string stmt) {
 	assert(handle != nullptr);
 	int params = 0;
 	std::string query = _process_query(stmt, &params);
+
+	std::string name = "dbi_pg_";
+	name += std::to_string((unsigned long)statement_index);
+	statement_index++;
 
 	PGresult * res = PQprepare(handle, name.c_str(), query.c_str(), params, nullptr); 
 	if(PQresultStatus(res) == PGRES_TUPLES_OK || PQresultStatus(res) == PGRES_COMMAND_OK) {

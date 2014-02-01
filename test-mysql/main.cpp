@@ -23,7 +23,7 @@ int main() {
 		printf("Affected rows: %d\n", ((DBI::MySQLResultSet*)rs.get())->AffectedRows());
 	}
 
-	auto sth = dbh->Prepare("SELECT * FROM variables WHERE varname=?", "Select Variable");
+	auto sth = dbh->Prepare("SELECT * FROM variables WHERE varname=?");
 	if(sth) {
 		auto rs = sth->Execute((const char*)"MOTD");
 		auto iter = rs->Rows().begin();
