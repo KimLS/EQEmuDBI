@@ -1,5 +1,5 @@
 #include "dbh-sqlite.h"
-#include "sth.h"
+#include "sth-sqlite.h"
 #include "rs.h"
 #include <stdint.h>
 #include <assert.h>
@@ -46,7 +46,7 @@ std::unique_ptr<DBI::ResultSet> DBI::SQLiteDatabaseHandle::Do(std::string stmt) 
 
 std::unique_ptr<DBI::ResultSet> DBI::SQLiteDatabaseHandle::Do(std::string stmt, DBI::StatementArguments &args) {
 	sqlite3_stmt *my_stmt = nullptr;
-	int rc = sqlite3_prepare(handle, stmt.c_str(), -1, &my_stmt, nullptr);
+	int rc = sqlite3_prepare_v2(handle, stmt.c_str(), -1, &my_stmt, nullptr);
 	if(rc != SQLITE_OK) {
 		std::string err = "Error: ";
 		err += sqlite3_errmsg(handle);
@@ -274,12 +274,26 @@ std::unique_ptr<DBI::ResultSet> DBI::SQLiteDatabaseHandle::Do(std::string stmt, 
 		rows.push_back(row);
 	}
 
+	sqlite3_finalize(my_stmt);
 	std::unique_ptr<DBI::ResultSet> rs(new DBI::ResultSet(field_names, rows));
 	return rs;
 }
 
 std::unique_ptr<DBI::StatementHandle> DBI::SQLiteDatabaseHandle::Prepare(std::string stmt) {
-	return nullptr;
+	sqlite3_stmt *my_stmt = nullptr;
+	int rc = sqlite3_prepare_v2(handle, stmt.c_str(), -1, &my_stmt, nullptr);
+	if(rc != SQLITE_OK) {
+		std::string err = "Error: ";
+		err += sqlite3_errmsg(handle);
+		SetError(DBH_ERROR_PREPARE_FAILURE, err);
+		if(my_stmt) {
+			sqlite3_finalize(my_stmt);
+		}
+		return false;
+	}
+	
+	std::unique_ptr<DBI::StatementHandle> res(new SQLiteStatementHandle(my_stmt));
+	return res;
 }
 
 bool DBI::SQLiteDatabaseHandle::Ping() {
@@ -296,8 +310,4 @@ bool DBI::SQLiteDatabaseHandle::Commit() {
 
 bool DBI::SQLiteDatabaseHandle::Rollback() {
 	return false;
-}
-
-std::unique_ptr<DBI::ResultSet> DBI::_internal_results_from_sqlite() {
-	return nullptr;
 }

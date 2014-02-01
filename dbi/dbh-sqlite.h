@@ -7,8 +7,6 @@
 namespace DBI
 {
 
-std::unique_ptr<ResultSet> _internal_results_from_sqlite();
-
 class SQLiteDatabaseHandle : public DatabaseHandle
 {
 public:

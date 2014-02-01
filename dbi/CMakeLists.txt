@@ -18,11 +18,11 @@ SET(dbi_headers
 
 IF(DBI_USE_SQLITE)
 	SET(dbi_sources
-		${dbi_sources} sqlite3.c dbh-sqlite.cpp #sth-sqlite.cpp
+		${dbi_sources} sqlite3.c dbh-sqlite.cpp sth-sqlite.cpp
 	)
 	
 	SET(dbi_headers
-		${dbi_headers} dbh-sqlite.h #sth-sqlite.h
+		${dbi_headers} dbh-sqlite.h sth-sqlite.h
 	)
 
 ENDIF(DBI_USE_SQLITE)
