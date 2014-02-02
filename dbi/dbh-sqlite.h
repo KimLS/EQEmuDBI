@@ -2,7 +2,8 @@
 #define DBI__DBH_SQLITE_H
 
 #include "dbh.h"
-#include "sqlite3.h"
+
+struct sqlite3;
 
 namespace DBI
 {

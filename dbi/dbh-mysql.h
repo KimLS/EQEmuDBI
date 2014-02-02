@@ -3,6 +3,12 @@
 
 #include "dbh.h"
 
+struct st_mysql_stmt;
+typedef struct st_mysql_stmt MYSQL_STMT;
+
+struct st_mysql;
+typedef st_mysql MYSQL;
+
 namespace DBI
 {
 
@@ -28,9 +34,8 @@ public:
 	virtual bool Rollback();
 
 private:
-	struct DBHandle;
 	std::unique_ptr<ResultSet> _basic_execute_server_side(std::string stmt, StatementArguments &args);
-	DBHandle *handle;
+	MYSQL* handle;
 };
 
 }

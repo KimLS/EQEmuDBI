@@ -21,15 +21,66 @@ bool DBI::PGDatabaseHandle::Connect(std::string dbname, std::string host, std::s
 		return false;
 	}
 	
-	std::string port;
-	auto iter = attr.find("port");
+	std::string connection_string = "dbname = '";
+	connection_string += dbname;
+	connection_string += "' host ='";
+	connection_string += host;
+	connection_string += "' user ='";
+	connection_string += username;
+	connection_string += "' password ='";
+	connection_string += auth; 
+	connection_string += "'";
+
+	auto iter = attr.find("pg_port");
 	if(iter != attr.end()) {
-		port = iter->second;
+		connection_string += " port ='";
+		connection_string += iter->second; 
+		connection_string += "'";
 	}
 
+	iter = attr.find("pg_connect_timeout");
+	if(iter != attr.end()) {
+		connection_string += " connect_timeout ='";
+		connection_string += iter->second; 
+		connection_string += "'";
+	}
 
+	iter = attr.find("pg_options");
+	if(iter != attr.end()) {
+		connection_string += " options ='";
+		connection_string += iter->second; 
+		connection_string += "'";
+	}
 
-	handle = PQsetdbLogin(host.c_str(), port.c_str(), nullptr, nullptr, dbname.c_str(), username.c_str(), auth.c_str());
+	iter = attr.find("pg_sslmode");
+	if(iter != attr.end()) {
+		connection_string += " sslmode ='";
+		connection_string += iter->second; 
+		connection_string += "'";
+	}
+
+	iter = attr.find("pg_krbsrvname");
+	if(iter != attr.end()) {
+		connection_string += " krbsrvname ='";
+		connection_string += iter->second; 
+		connection_string += "'";
+	}
+
+	iter = attr.find("pg_gsslib");
+	if(iter != attr.end()) {
+		connection_string += " gsslib ='";
+		connection_string += iter->second; 
+		connection_string += "'";
+	}
+
+	iter = attr.find("pg_service");
+	if(iter != attr.end()) {
+		connection_string += " service ='";
+		connection_string += iter->second; 
+		connection_string += "'";
+	}
+
+	handle = PQconnectdb(connection_string.c_str());
 	
 	if(handle) {
 		return true;

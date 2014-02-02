@@ -1,3 +1,9 @@
+#include "sth-mysql.h"
+#include "rs-mysql.h"
+#include <stdint.h>
+#include <assert.h>
+#include <memory>
+
 #ifdef _WIN32
 #include <Windows.h>
 #endif
@@ -5,26 +11,13 @@
 #include <mysqld_error.h>
 #include <errmsg.h>
 
-#include "sth-mysql.h"
-#include "rs-mysql.h"
-#include <stdint.h>
-#include <assert.h>
-#include <memory>
-
-struct DBI::MySQLStatementHandle::STMTHandle
-{
-	MYSQL_STMT *statement;
-};
-
-DBI::MySQLStatementHandle::MySQLStatementHandle(MYSQL_STMT *stmt) {
-	statement = new STMTHandle;
-	statement->statement = stmt;
+DBI::MySQLStatementHandle::MySQLStatementHandle(MYSQL_STMT* stmt) {
+	statement = stmt;
 }
 
 DBI::MySQLStatementHandle::~MySQLStatementHandle() {
-	if(statement->statement)
-		mysql_stmt_close(statement->statement);
-	delete statement;
+	if(statement)
+		mysql_stmt_close(statement);
 }
 
 std::unique_ptr<DBI::ResultSet> DBI::MySQLStatementHandle::Execute() {
@@ -33,7 +26,7 @@ std::unique_ptr<DBI::ResultSet> DBI::MySQLStatementHandle::Execute() {
 }
 
 std::unique_ptr<DBI::ResultSet> DBI::MySQLStatementHandle::Execute(StatementArguments &args) {
-	assert(statement->statement != nullptr);
+	assert(statement != nullptr);
 	std::unique_ptr<MYSQL_BIND> params(nullptr);
 	size_t argc = args.size();
 	if(argc > 0) {
@@ -245,25 +238,25 @@ std::unique_ptr<DBI::ResultSet> DBI::MySQLStatementHandle::Execute(StatementArgu
 			}
 		}
 		
-		if(mysql_stmt_bind_param(statement->statement, params.get())) {
-			std::string err = mysql_stmt_error(statement->statement);
+		if(mysql_stmt_bind_param(statement, params.get())) {
+			std::string err = mysql_stmt_error(statement);
 			SetError(STH_ERROR_BIND_FAILURE, err);
 			return nullptr;
 		}
 
-		if(mysql_stmt_execute(statement->statement)) {
-			std::string err = mysql_stmt_error(statement->statement);
+		if(mysql_stmt_execute(statement)) {
+			std::string err = mysql_stmt_error(statement);
 			SetError(STH_ERROR_STMT_FAILURE, err);
 			return nullptr;
 		}
 	} else {
-		if(mysql_stmt_execute(statement->statement)) {
-			std::string err = mysql_stmt_error(statement->statement);
+		if(mysql_stmt_execute(statement)) {
+			std::string err = mysql_stmt_error(statement);
 			SetError(STH_ERROR_STMT_FAILURE, err);
 			return nullptr;
 		}		
 	}
 
-	std::unique_ptr<ResultSet> res(DBI::_internal_results_from_mysql_stmt(statement->statement));
+	std::unique_ptr<ResultSet> res(DBI::_internal_results_from_mysql_stmt(statement));
 	return res;
 }

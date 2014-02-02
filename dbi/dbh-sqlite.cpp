@@ -3,6 +3,7 @@
 #include "rs.h"
 #include <stdint.h>
 #include <assert.h>
+#include "sqlite3.h"
 
 DBI::SQLiteDatabaseHandle::SQLiteDatabaseHandle() : handle(nullptr) {
 }
@@ -48,8 +49,7 @@ std::unique_ptr<DBI::ResultSet> DBI::SQLiteDatabaseHandle::Do(std::string stmt, 
 	sqlite3_stmt *my_stmt = nullptr;
 	int rc = sqlite3_prepare_v2(handle, stmt.c_str(), (int)stmt.length() + 1, &my_stmt, nullptr);
 	if(rc != SQLITE_OK) {
-		std::string err = "Error: ";
-		err += sqlite3_errmsg(handle);
+		std::string err = sqlite3_errmsg(handle);
 		SetError(DBH_ERROR_PREPARE_FAILURE, err);
 		if(my_stmt) {
 			sqlite3_finalize(my_stmt);
@@ -81,6 +81,7 @@ std::unique_ptr<DBI::ResultSet> DBI::SQLiteDatabaseHandle::Do(std::string stmt, 
 					}
 				} catch(DBI::bad_any_cast) {
 					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from bool arg in DBI::SQLiteDatabaseHandle::Do(stmt, args).");
+					sqlite3_finalize(my_stmt);
 					return nullptr;
 				}
 			} else if(t.type() == typeid(uint8_t)) {
@@ -93,6 +94,7 @@ std::unique_ptr<DBI::ResultSet> DBI::SQLiteDatabaseHandle::Do(std::string stmt, 
 					}
 				} catch(DBI::bad_any_cast) {
 					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from uint8_t arg in DBI::SQLiteDatabaseHandle::Do(stmt, args).");
+					sqlite3_finalize(my_stmt);
 					return nullptr;
 				}
 			} else if(t.type() == typeid(int8_t)) {
@@ -105,6 +107,7 @@ std::unique_ptr<DBI::ResultSet> DBI::SQLiteDatabaseHandle::Do(std::string stmt, 
 					}
 				} catch(DBI::bad_any_cast) {
 					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from int8_t arg in DBI::SQLiteDatabaseHandle::Do(stmt, args).");
+					sqlite3_finalize(my_stmt);
 					return nullptr;
 				}
 			} else if(t.type() == typeid(uint16_t)) {
@@ -117,6 +120,7 @@ std::unique_ptr<DBI::ResultSet> DBI::SQLiteDatabaseHandle::Do(std::string stmt, 
 					}
 				} catch(DBI::bad_any_cast) {
 					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from uint16_t arg in DBI::SQLiteDatabaseHandle::Do(stmt, args).");
+					sqlite3_finalize(my_stmt);
 					return nullptr;
 				}
 			} else if(t.type() == typeid(int16_t)) {
@@ -129,6 +133,7 @@ std::unique_ptr<DBI::ResultSet> DBI::SQLiteDatabaseHandle::Do(std::string stmt, 
 					}
 				} catch(DBI::bad_any_cast) {
 					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from int16_t arg in DBI::SQLiteDatabaseHandle::Do(stmt, args).");
+					sqlite3_finalize(my_stmt);
 					return nullptr;
 				}
 			} else if(t.type() == typeid(uint32_t)) {
@@ -141,6 +146,7 @@ std::unique_ptr<DBI::ResultSet> DBI::SQLiteDatabaseHandle::Do(std::string stmt, 
 					}
 				} catch(DBI::bad_any_cast) {
 					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from uint32_t arg in DBI::SQLiteDatabaseHandle::Do(stmt, args).");
+					sqlite3_finalize(my_stmt);
 					return nullptr;
 				}
 			} else if(t.type() == typeid(int32_t)) {
@@ -153,6 +159,7 @@ std::unique_ptr<DBI::ResultSet> DBI::SQLiteDatabaseHandle::Do(std::string stmt, 
 					}
 				} catch(DBI::bad_any_cast) {
 					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from int32_t arg in DBI::SQLiteDatabaseHandle::Do(stmt, args).");
+					sqlite3_finalize(my_stmt);
 					return nullptr;
 				}
 			} else if(t.type() == typeid(uint64_t)) {
@@ -165,6 +172,7 @@ std::unique_ptr<DBI::ResultSet> DBI::SQLiteDatabaseHandle::Do(std::string stmt, 
 					}
 				} catch(DBI::bad_any_cast) {
 					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from uint64_t arg in DBI::SQLiteDatabaseHandle::Do(stmt, args).");
+					sqlite3_finalize(my_stmt);
 					return nullptr;
 				}
 			} else if(t.type() == typeid(int64_t)) {
@@ -177,6 +185,7 @@ std::unique_ptr<DBI::ResultSet> DBI::SQLiteDatabaseHandle::Do(std::string stmt, 
 					}
 				} catch(DBI::bad_any_cast) {
 					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from int64_t arg in DBI::SQLiteDatabaseHandle::Do(stmt, args).");
+					sqlite3_finalize(my_stmt);
 					return nullptr;
 				}
 			} else if(t.type() == typeid(float)) {
@@ -189,6 +198,7 @@ std::unique_ptr<DBI::ResultSet> DBI::SQLiteDatabaseHandle::Do(std::string stmt, 
 					}
 				} catch(DBI::bad_any_cast) {
 					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from float arg in DBI::SQLiteDatabaseHandle::Do(stmt, args).");
+					sqlite3_finalize(my_stmt);
 					return nullptr;
 				}
 			} else if(t.type() == typeid(double)) {
@@ -201,6 +211,7 @@ std::unique_ptr<DBI::ResultSet> DBI::SQLiteDatabaseHandle::Do(std::string stmt, 
 					}
 				} catch(DBI::bad_any_cast) {
 					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from double arg in DBI::SQLiteDatabaseHandle::Do(stmt, args).");
+					sqlite3_finalize(my_stmt);
 					return nullptr;
 				}
 			} else if(t.type() == typeid(std::string)) {
@@ -213,6 +224,7 @@ std::unique_ptr<DBI::ResultSet> DBI::SQLiteDatabaseHandle::Do(std::string stmt, 
 					}
 				} catch(DBI::bad_any_cast) {
 					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from std::string arg in DBI::SQLiteDatabaseHandle::Do(stmt, args).");
+					sqlite3_finalize(my_stmt);
 					return nullptr;
 				}
 			} else if(t.type() == typeid(const char*)) {
@@ -227,10 +239,12 @@ std::unique_ptr<DBI::ResultSet> DBI::SQLiteDatabaseHandle::Do(std::string stmt, 
 					}
 				} catch(DBI::bad_any_cast) {
 					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from const char* arg in DBI::SQLiteDatabaseHandle::Do(stmt, args).");
+					sqlite3_finalize(my_stmt);
 					return nullptr;
 				}
 			} else if(!t.empty() && t.type() != typeid(std::nullptr_t)) {
 				SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from unknown arg in DBI::SQLiteDatabaseHandle::Do(stmt, args).");
+				sqlite3_finalize(my_stmt);
 				return nullptr;
 			} else {
 				if(sqlite3_bind_null(my_stmt, idx) != SQLITE_OK) {
@@ -282,15 +296,14 @@ std::unique_ptr<DBI::ResultSet> DBI::SQLiteDatabaseHandle::Do(std::string stmt, 
 
 std::unique_ptr<DBI::StatementHandle> DBI::SQLiteDatabaseHandle::Prepare(std::string stmt) {
 	sqlite3_stmt *my_stmt = nullptr;
-	int rc = sqlite3_prepare_v2(handle, stmt.c_str(), stmt.length() + 1, &my_stmt, nullptr);
+	int rc = sqlite3_prepare_v2(handle, stmt.c_str(), (int)stmt.length() + 1, &my_stmt, nullptr);
 	if(rc != SQLITE_OK) {
-		std::string err = "Error: ";
-		err += sqlite3_errmsg(handle);
+		std::string err = sqlite3_errmsg(handle);
 		SetError(DBH_ERROR_PREPARE_FAILURE, err);
 		if(my_stmt) {
 			sqlite3_finalize(my_stmt);
 		}
-		return false;
+		return nullptr;
 	}
 	
 	std::unique_ptr<DBI::StatementHandle> res(new SQLiteStatementHandle(handle, my_stmt));
@@ -302,13 +315,25 @@ bool DBI::SQLiteDatabaseHandle::Ping() {
 }
 
 bool DBI::SQLiteDatabaseHandle::Begin() {
+	auto rs = Do("BEGIN");
+	if(rs) {
+		return true;
+	}
 	return false;
 }
 
 bool DBI::SQLiteDatabaseHandle::Commit() {
+	auto rs = Do("COMMIT");
+	if(rs) {
+		return true;
+	}
 	return false;
 }
 
 bool DBI::SQLiteDatabaseHandle::Rollback() {
+	auto rs = Do("ROLLBACK");
+	if(rs) {
+		return true;
+	}
 	return false;
 }

@@ -4,6 +4,9 @@
 #include "sth.h"
 #include "dbh-sqlite.h"
 
+struct sqlite3;
+struct sqlite3_stmt;
+
 namespace DBI
 {
 

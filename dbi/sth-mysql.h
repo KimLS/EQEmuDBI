@@ -4,6 +4,9 @@
 #include "sth.h"
 #include "dbh-mysql.h"
 
+struct st_mysql_stmt;
+typedef struct st_mysql_stmt MYSQL_STMT;
+
 namespace DBI
 {
 
@@ -18,8 +21,7 @@ public:
 	virtual std::unique_ptr<ResultSet> Execute();
 	virtual std::unique_ptr<ResultSet> Execute(StatementArguments &args);
 private:
-	struct STMTHandle;
-	STMTHandle *statement;
+	MYSQL_STMT *statement;
 };
 
 }

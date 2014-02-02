@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <assert.h>
 #include <memory>
+#include "sqlite3.h"
 
 DBI::SQLiteStatementHandle::SQLiteStatementHandle(sqlite3 *handle_, sqlite3_stmt *stmt_) : handle(handle_), stmt(stmt_) {
 }
