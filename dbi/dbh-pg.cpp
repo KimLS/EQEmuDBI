@@ -3,6 +3,7 @@
 #include "rs.h"
 #include <stdint.h>
 #include <assert.h>
+#include <libpq-fe.h>
 
 static uint32_t statement_index = 0;
 
@@ -25,6 +26,8 @@ bool DBI::PGDatabaseHandle::Connect(std::string dbname, std::string host, std::s
 	if(iter != attr.end()) {
 		port = iter->second;
 	}
+
+
 
 	handle = PQsetdbLogin(host.c_str(), port.c_str(), nullptr, nullptr, dbname.c_str(), username.c_str(), auth.c_str());
 	
@@ -413,7 +416,8 @@ std::unique_ptr<DBI::ResultSet> DBI::_internal_results_from_postgresql(PGresult*
 			rows.push_back(row);
 		}
 
-		std::unique_ptr<DBI::ResultSet> rs(new DBI::ResultSet(field_names, rows));
+		size_t affected_rows = (size_t)atoi(PQcmdTuples(res));
+		std::unique_ptr<DBI::ResultSet> rs(new DBI::ResultSet(field_names, rows, affected_rows));
 
 		return rs;
 	}

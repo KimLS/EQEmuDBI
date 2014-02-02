@@ -1,5 +1,11 @@
 #include "dbi.h"
 #ifdef MYSQL_ENGINE
+#ifdef _WIN32
+#include <Windows.h>
+#endif
+#include <mysql.h>
+#include <mysqld_error.h>
+#include <errmsg.h>
 #include "dbh-mysql.h"
 #endif
 

@@ -22,14 +22,15 @@ public:
 
 	typedef std::map<std::string, FieldData> Row;
 
-	ResultSet()
+	ResultSet() : affected_rows(0)
 	{
 	}
 
-	ResultSet(std::vector<std::string> n_fields, std::list<Row> n_rows) 
+	ResultSet(std::vector<std::string> n_fields, std::list<Row> n_rows, size_t affected_rows_) 
 	{
 		fields = n_fields;
 		rows = n_rows;
+		affected_rows = affected_rows_;
 	}
 	virtual ~ResultSet() { }
 	
@@ -37,9 +38,11 @@ public:
 	const std::string FieldByID(unsigned int id) { return fields[id]; }
 	const std::list<Row>& Rows() const { return rows; }
 	size_t RowCount() const { return rows.size(); }
+	size_t AffectedRows() const { return affected_rows; }
 protected:
 	std::vector<std::string> fields;
 	std::list<Row> rows;
+	size_t affected_rows;
 };
 
 }

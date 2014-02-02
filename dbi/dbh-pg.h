@@ -2,7 +2,12 @@
 #define DBI__DBH_PGL_H
 
 #include "dbh.h"
-#include <libpq-fe.h>
+
+struct pg_result;
+typedef struct pg_result PGresult;
+
+struct pg_conn;
+typedef struct pg_conn PGconn;
 
 namespace DBI
 {
@@ -30,7 +35,7 @@ public:
 
 private:
 	std::string _process_query(std::string stmt, int *params = nullptr);
-	PGconn *handle;	
+	PGconn *handle;
 };
 
 }

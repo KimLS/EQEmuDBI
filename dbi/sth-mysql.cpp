@@ -1,15 +1,30 @@
+#ifdef _WIN32
+#include <Windows.h>
+#endif
+#include <mysql.h>
+#include <mysqld_error.h>
+#include <errmsg.h>
+
 #include "sth-mysql.h"
 #include "rs-mysql.h"
 #include <stdint.h>
 #include <assert.h>
 #include <memory>
 
-DBI::MySQLStatementHandle::MySQLStatementHandle(MYSQL_STMT *stmt) : statement(stmt) {
+struct DBI::MySQLStatementHandle::STMTHandle
+{
+	MYSQL_STMT *statement;
+};
+
+DBI::MySQLStatementHandle::MySQLStatementHandle(MYSQL_STMT *stmt) {
+	statement = new STMTHandle;
+	statement->statement = stmt;
 }
 
 DBI::MySQLStatementHandle::~MySQLStatementHandle() {
-	if(statement)
-		mysql_stmt_close(statement);
+	if(statement->statement)
+		mysql_stmt_close(statement->statement);
+	delete statement;
 }
 
 std::unique_ptr<DBI::ResultSet> DBI::MySQLStatementHandle::Execute() {
@@ -18,7 +33,7 @@ std::unique_ptr<DBI::ResultSet> DBI::MySQLStatementHandle::Execute() {
 }
 
 std::unique_ptr<DBI::ResultSet> DBI::MySQLStatementHandle::Execute(StatementArguments &args) {
-	assert(statement != nullptr);
+	assert(statement->statement != nullptr);
 	std::unique_ptr<MYSQL_BIND> params(nullptr);
 	size_t argc = args.size();
 	if(argc > 0) {
@@ -46,8 +61,6 @@ std::unique_ptr<DBI::ResultSet> DBI::MySQLStatementHandle::Execute(StatementArgu
 					}
 				} catch(DBI::bad_any_cast) {
 					SetError(STH_ERROR_INVALID_ARGS, "Could not convert from bool arg in DBI::MySQLStatementHandle::Execute(args).");
-					mysql_stmt_close(statement);
-					statement = nullptr;
 					return nullptr;
 				}
 			} else if(t->type() == typeid(uint8_t)) {
@@ -62,8 +75,6 @@ std::unique_ptr<DBI::ResultSet> DBI::MySQLStatementHandle::Execute(StatementArgu
 					}
 				} catch(DBI::bad_any_cast) {
 					SetError(STH_ERROR_INVALID_ARGS, "Could not convert from uint8_t arg in DBI::MySQLStatementHandle::Execute(args).");
-					mysql_stmt_close(statement);
-					statement = nullptr;
 					return nullptr;
 				}
 			} else if(t->type() == typeid(int8_t)) {
@@ -78,8 +89,6 @@ std::unique_ptr<DBI::ResultSet> DBI::MySQLStatementHandle::Execute(StatementArgu
 					}
 				} catch(DBI::bad_any_cast) {
 					SetError(STH_ERROR_INVALID_ARGS, "Could not convert from int8_t arg in DBI::MySQLStatementHandle::Execute(args).");
-					mysql_stmt_close(statement);
-					statement = nullptr;
 					return nullptr;
 				}
 			} else if(t->type() == typeid(uint16_t)) {
@@ -94,8 +103,6 @@ std::unique_ptr<DBI::ResultSet> DBI::MySQLStatementHandle::Execute(StatementArgu
 					}
 				} catch(DBI::bad_any_cast) {
 					SetError(STH_ERROR_INVALID_ARGS, "Could not convert from uint16_t arg in DBI::MySQLStatementHandle::Execute(args).");
-					mysql_stmt_close(statement);
-					statement = nullptr;
 					return nullptr;
 				}
 			} else if(t->type() == typeid(int16_t)) {
@@ -110,8 +117,6 @@ std::unique_ptr<DBI::ResultSet> DBI::MySQLStatementHandle::Execute(StatementArgu
 					}
 				} catch(DBI::bad_any_cast) {
 					SetError(STH_ERROR_INVALID_ARGS, "Could not convert from int16_t arg in DBI::MySQLStatementHandle::Execute(args).");
-					mysql_stmt_close(statement);
-					statement = nullptr;
 					return nullptr;
 				}
 			} else if(t->type() == typeid(uint32_t)) {
@@ -126,8 +131,6 @@ std::unique_ptr<DBI::ResultSet> DBI::MySQLStatementHandle::Execute(StatementArgu
 					}
 				} catch(DBI::bad_any_cast) {
 					SetError(STH_ERROR_INVALID_ARGS, "Could not convert from uint32_t arg in DBI::MySQLStatementHandle::Execute(args).");
-					mysql_stmt_close(statement);
-					statement = nullptr;
 					return nullptr;
 				}
 			} else if(t->type() == typeid(int32_t)) {
@@ -142,8 +145,6 @@ std::unique_ptr<DBI::ResultSet> DBI::MySQLStatementHandle::Execute(StatementArgu
 					}
 				} catch(DBI::bad_any_cast) {
 					SetError(STH_ERROR_INVALID_ARGS, "Could not convert from int32_t arg in DBI::MySQLStatementHandle::Execute(args).");
-					mysql_stmt_close(statement);
-					statement = nullptr;
 					return nullptr;
 				}
 			} else if(t->type() == typeid(uint64_t)) {
@@ -158,8 +159,6 @@ std::unique_ptr<DBI::ResultSet> DBI::MySQLStatementHandle::Execute(StatementArgu
 					}
 				} catch(DBI::bad_any_cast) {
 					SetError(STH_ERROR_INVALID_ARGS, "Could not convert from uint64_t arg in DBI::MySQLStatementHandle::Execute(args).");
-					mysql_stmt_close(statement);
-					statement = nullptr;
 					return nullptr;
 				}
 			} else if(t->type() == typeid(int64_t)) {
@@ -174,8 +173,6 @@ std::unique_ptr<DBI::ResultSet> DBI::MySQLStatementHandle::Execute(StatementArgu
 					}
 				} catch(DBI::bad_any_cast) {
 					SetError(STH_ERROR_INVALID_ARGS, "Could not convert from int64_t arg in DBI::MySQLStatementHandle::Execute(args).");
-					mysql_stmt_close(statement);
-					statement = nullptr;
 					return nullptr;
 				}
 			} else if(t->type() == typeid(float)) {
@@ -190,8 +187,6 @@ std::unique_ptr<DBI::ResultSet> DBI::MySQLStatementHandle::Execute(StatementArgu
 					}
 				} catch(DBI::bad_any_cast) {
 					SetError(STH_ERROR_INVALID_ARGS, "Could not convert from float arg in DBI::MySQLStatementHandle::Execute(args).");
-					mysql_stmt_close(statement);
-					statement = nullptr;
 					return nullptr;
 				}
 			} else if(t->type() == typeid(double)) {
@@ -206,8 +201,6 @@ std::unique_ptr<DBI::ResultSet> DBI::MySQLStatementHandle::Execute(StatementArgu
 					}
 				} catch(DBI::bad_any_cast) {
 					SetError(STH_ERROR_INVALID_ARGS, "Could not convert from double arg in DBI::MySQLStatementHandle::Execute(args).");
-					mysql_stmt_close(statement);
-					statement = nullptr;
 					return nullptr;
 				}
 			} else if(t->type() == typeid(std::string)) {
@@ -223,8 +216,6 @@ std::unique_ptr<DBI::ResultSet> DBI::MySQLStatementHandle::Execute(StatementArgu
 					}
 				} catch(DBI::bad_any_cast) {
 					SetError(STH_ERROR_INVALID_ARGS, "Could not convert from std::string arg in DBI::MySQLStatementHandle::Execute(args).");
-					mysql_stmt_close(statement);
-					statement = nullptr;
 					return nullptr;
 				}
 			} else if(t->type() == typeid(const char*)) {
@@ -240,8 +231,6 @@ std::unique_ptr<DBI::ResultSet> DBI::MySQLStatementHandle::Execute(StatementArgu
 					}
 				} catch(DBI::bad_any_cast) {
 					SetError(STH_ERROR_INVALID_ARGS, "Could not convert from const char* arg in DBI::MySQLStatementHandle::Execute(args).");
-					mysql_stmt_close(statement);
-					statement = nullptr;
 					return nullptr;
 				}
 			} else if(t->type() == typeid(nullptr_t)) {
@@ -252,34 +241,29 @@ std::unique_ptr<DBI::ResultSet> DBI::MySQLStatementHandle::Execute(StatementArgu
 				params.get()[i].length = 0;
 			} else {
 				SetError(STH_ERROR_INVALID_ARGS, "Could not convert from unknown arg in DBI::MySQLStatementHandle::Execute(args).");
-				mysql_stmt_close(statement);
-				statement = nullptr;
 				return nullptr;
 			}
 		}
 		
-		if(mysql_stmt_bind_param(statement, params.get())) {
-			SetError(STH_ERROR_BIND_FAILURE, "Could not bind params in DBI::MySQLStatementHandle::Execute(args).");
-			mysql_stmt_close(statement);
-			statement = nullptr;
+		if(mysql_stmt_bind_param(statement->statement, params.get())) {
+			std::string err = mysql_stmt_error(statement->statement);
+			SetError(STH_ERROR_BIND_FAILURE, err);
 			return nullptr;
 		}
 
-		if(mysql_stmt_execute(statement)) {
-			SetError(STH_ERROR_STMT_FAILURE, "Could not execute statement in DBI::MySQLStatementHandle::Execute(args).");
-			mysql_stmt_close(statement);
-			statement = nullptr;
+		if(mysql_stmt_execute(statement->statement)) {
+			std::string err = mysql_stmt_error(statement->statement);
+			SetError(STH_ERROR_STMT_FAILURE, err);
 			return nullptr;
 		}
 	} else {
-		if(mysql_stmt_execute(statement)) {
-			SetError(STH_ERROR_STMT_FAILURE, "Could not execute statement in DBI::MySQLStatementHandle::Execute(args).");
-			mysql_stmt_close(statement);
-			statement = nullptr;
+		if(mysql_stmt_execute(statement->statement)) {
+			std::string err = mysql_stmt_error(statement->statement);
+			SetError(STH_ERROR_STMT_FAILURE, err);
 			return nullptr;
 		}		
 	}
 
-	std::unique_ptr<ResultSet> res(DBI::_internal_results_from_mysql_stmt(statement));
+	std::unique_ptr<ResultSet> res(DBI::_internal_results_from_mysql_stmt(statement->statement));
 	return res;
 }

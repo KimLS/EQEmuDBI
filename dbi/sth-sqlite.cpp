@@ -4,7 +4,7 @@
 #include <assert.h>
 #include <memory>
 
-DBI::SQLiteStatementHandle::SQLiteStatementHandle(sqlite3_stmt *stmt_) : stmt(stmt_) {
+DBI::SQLiteStatementHandle::SQLiteStatementHandle(sqlite3 *handle_, sqlite3_stmt *stmt_) : handle(handle_), stmt(stmt_) {
 }
 
 DBI::SQLiteStatementHandle::~SQLiteStatementHandle() {
@@ -20,6 +20,7 @@ std::unique_ptr<DBI::ResultSet> DBI::SQLiteStatementHandle::Execute() {
 
 std::unique_ptr<DBI::ResultSet> DBI::SQLiteStatementHandle::Execute(StatementArguments &args) {
 	assert(stmt != nullptr);
+	assert(handle != nullptr);
 	int idx = 1;
 	size_t nParams = args.size();
 	if(nParams > 0) {
@@ -159,7 +160,7 @@ std::unique_ptr<DBI::ResultSet> DBI::SQLiteStatementHandle::Execute(StatementArg
 					std::string v = DBI::any_cast<std::string>(t);
 					size_t len = v.length();
 					
-					if(sqlite3_bind_text(stmt, idx, v.c_str(), (int)len, nullptr) != SQLITE_OK) {
+					if(sqlite3_bind_text(stmt, idx, v.c_str(), (int)len, SQLITE_TRANSIENT) != SQLITE_OK) {
 						SetError(STH_ERROR_STMT_FAILURE, "Could not bind std::string arg in DBI::SQLiteStatementHandle::Execute( args).");
 						return nullptr;
 					}
@@ -172,7 +173,7 @@ std::unique_ptr<DBI::ResultSet> DBI::SQLiteStatementHandle::Execute(StatementArg
 					const char *v = DBI::any_cast<const char*>(t);
 					size_t len = strlen(v);
 					
-					if(sqlite3_bind_text(stmt, idx, v, (int)len, nullptr) != SQLITE_OK) {
+					if(sqlite3_bind_text(stmt, idx, v, (int)len, SQLITE_TRANSIENT) != SQLITE_OK) {
 						SetError(STH_ERROR_STMT_FAILURE, "Could not bind const char* arg in DBI::SQLiteStatementHandle::Execute( args).");
 						return nullptr;
 					}
@@ -223,6 +224,7 @@ std::unique_ptr<DBI::ResultSet> DBI::SQLiteStatementHandle::Execute(StatementArg
 	}
 
 	sqlite3_reset(stmt);
-	std::unique_ptr<DBI::ResultSet> rs(new DBI::ResultSet(field_names, rows));
+	size_t affected_rows = sqlite3_changes(handle);
+	std::unique_ptr<DBI::ResultSet> rs(new DBI::ResultSet(field_names, rows, affected_rows));
 	return rs;
 }

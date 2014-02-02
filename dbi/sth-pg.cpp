@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <assert.h>
 #include <memory>
+#include <libpq-fe.h>
 
 DBI::PGStatementHandle::PGStatementHandle(PGconn *conn_, std::string name_) : conn(conn_), name(name_) {
 }
@@ -233,15 +234,16 @@ std::unique_ptr<DBI::ResultSet> DBI::PGStatementHandle::Execute(StatementArgumen
 
 	PGresult *res = PQexecPrepared(conn, name.c_str(), (int)nParams, paramValues.get(), nullptr, nullptr, 0);
 	
-	std::unique_ptr<ResultSet> rs = _internal_results_from_postgresql(res);
-	if(rs) {
-		PQclear(res);
-		return rs;
-	}
+	if(res) {
+		std::unique_ptr<ResultSet> rs = _internal_results_from_postgresql(res);
+		if(rs) {
+			PQclear(res);
+			return rs;
+		}
 	
-	std::string err = "PG Error: ";
-	char *err_str = PQresultErrorMessage(res);
-	err += err_str;
-	SetError(STH_ERROR_STMT_FAILURE, err);
+		std::string err = PQresultErrorMessage(res);
+		SetError(STH_ERROR_STMT_FAILURE, err);
+		PQclear(res);
+	}
 	return nullptr;
 }

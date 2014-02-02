@@ -1,131 +1,144 @@
+#ifdef _WIN32
+#include <Windows.h>
+#endif
+#include <mysql.h>
+#include <mysqld_error.h>
+#include <errmsg.h>
+
 #include "dbh-mysql.h"
 #include "sth-mysql.h"
 #include "rs-mysql.h"
 #include <stdint.h>
 #include <assert.h>
 
+struct DBI::MySQLDatabaseHandle::DBHandle {
+	MYSQL *handle;
+};
+
 DBI::MySQLDatabaseHandle::MySQLDatabaseHandle() {
-	handle = nullptr;
+	handle = new DBHandle;
+	handle->handle = nullptr;
 }
 
 DBI::MySQLDatabaseHandle::~MySQLDatabaseHandle() {
 	Disconnect();
+	delete handle;
 }
 
 bool DBI::MySQLDatabaseHandle::Connect(std::string dbname, std::string host, std::string username,
 									   std::string auth, DatabaseAttributes &attr) {
-	if(handle) {
+	if(handle->handle) {
 		return false;
 	}
 	
-	handle = mysql_init(handle);
-	if(!handle) {
+	handle->handle = mysql_init(handle->handle);
+	if(!handle->handle) {
 		return false;
 	}
 	
 	unsigned int client_flag = 0;
 	auto iter = attr.find("mysql_init_command");
 	if(iter != attr.end()) {
-		mysql_options(handle, MYSQL_INIT_COMMAND, iter->second.c_str());
+		mysql_options(handle->handle, MYSQL_INIT_COMMAND, iter->second.c_str());
 	}
 	
 	iter = attr.find("mysql_compress");
 	if(iter != attr.end()) {
-		mysql_options(handle, MYSQL_OPT_COMPRESS, nullptr);
+		mysql_options(handle->handle, MYSQL_OPT_COMPRESS, nullptr);
 	}
 	
 	iter = attr.find("mysql_connect_timeout");
 	if(iter != attr.end()) {
 		int t = std::stoi(iter->second);
-		mysql_options(handle, MYSQL_OPT_CONNECT_TIMEOUT, &t);
+		mysql_options(handle->handle, MYSQL_OPT_CONNECT_TIMEOUT, &t);
 	}
 	
 	iter = attr.find("mysql_local_infile");
 	if(iter != attr.end()) {
 		unsigned int t = static_cast<unsigned int>(std::stoi(iter->second));
-		mysql_options(handle, MYSQL_OPT_LOCAL_INFILE, &t);
+		mysql_options(handle->handle, MYSQL_OPT_LOCAL_INFILE, &t);
 	}
 	
 	iter = attr.find("mysql_named_pipe");
 	if(iter != attr.end()) {
-		mysql_options(handle, MYSQL_OPT_RECONNECT, nullptr);
+		mysql_options(handle->handle, MYSQL_OPT_RECONNECT, nullptr);
 	}
 	
 	iter = attr.find("mysql_protocol");
 	if(iter != attr.end()) {
 		unsigned int t = static_cast<unsigned int>(std::stoi(iter->second));
-		mysql_options(handle, MYSQL_OPT_PROTOCOL, &t);
+		mysql_options(handle->handle, MYSQL_OPT_PROTOCOL, &t);
 	}
 	
 	iter = attr.find("mysql_read_timeout");
 	if(iter != attr.end()) {
 		unsigned int t = static_cast<unsigned int>(std::stoi(iter->second));
-		mysql_options(handle, MYSQL_OPT_READ_TIMEOUT, &t);
+		mysql_options(handle->handle, MYSQL_OPT_READ_TIMEOUT, &t);
 	}
 	
 	iter = attr.find("mysql_reconnect");
 	if(iter != attr.end()) {
 		my_bool t = static_cast<my_bool>(std::stoi(iter->second));
-		mysql_options(handle, MYSQL_OPT_RECONNECT, &t);
+		mysql_options(handle->handle, MYSQL_OPT_RECONNECT, &t);
 	}
 	
 	iter = attr.find("mysql_ssl_verify_server_cert");
 	if(iter != attr.end()) {
 		my_bool t = static_cast<my_bool>(std::stoi(iter->second));
-		mysql_options(handle, MYSQL_OPT_SSL_VERIFY_SERVER_CERT, &t);
+		mysql_options(handle->handle, MYSQL_OPT_SSL_VERIFY_SERVER_CERT, &t);
 	}
 	
 	iter = attr.find("mysql_use_result");
 	if(iter != attr.end()) {
-		mysql_options(handle, MYSQL_OPT_USE_RESULT, nullptr);
+		mysql_options(handle->handle, MYSQL_OPT_USE_RESULT, nullptr);
 	}
 	
 	iter = attr.find("mysql_write_timeout");
 	if(iter != attr.end()) {
 		unsigned int t = static_cast<unsigned int>(std::stoi(iter->second));
-		mysql_options(handle, MYSQL_OPT_WRITE_TIMEOUT, &t);
+		mysql_options(handle->handle, MYSQL_OPT_WRITE_TIMEOUT, &t);
 	}
 	
 	iter = attr.find("mysql_read_default_file");
 	if(iter != attr.end()) {
-		mysql_options(handle, MYSQL_READ_DEFAULT_FILE, iter->second.c_str());
+		mysql_options(handle->handle, MYSQL_READ_DEFAULT_FILE, iter->second.c_str());
 	}
 	
 	iter = attr.find("mysql_read_default_group");
 	if(iter != attr.end()) {
-		mysql_options(handle, MYSQL_READ_DEFAULT_GROUP, iter->second.c_str());
+		mysql_options(handle->handle, MYSQL_READ_DEFAULT_GROUP, iter->second.c_str());
 	}
 	
 	iter = attr.find("mysql_report_data_truncation");
 	if(iter != attr.end()) {
 		my_bool t = static_cast<my_bool>(std::stoi(iter->second));
-		mysql_options(handle, MYSQL_REPORT_DATA_TRUNCATION, &t);
+		mysql_options(handle->handle, MYSQL_REPORT_DATA_TRUNCATION, &t);
 	}
 	
 	iter = attr.find("mysql_secure_auth");
 	if(iter != attr.end()) {
 		my_bool t = static_cast<my_bool>(std::stoi(iter->second));
-		mysql_options(handle, MYSQL_SECURE_AUTH, &t);
+		mysql_options(handle->handle, MYSQL_SECURE_AUTH, &t);
 	}
 	
 	iter = attr.find("mysql_charset_dir");
 	if(iter != attr.end()) {
-		mysql_options(handle, MYSQL_SET_CHARSET_DIR, iter->second.c_str());
+		mysql_options(handle->handle, MYSQL_SET_CHARSET_DIR, iter->second.c_str());
 	}
 	
 	iter = attr.find("mysql_charset_name");
 	if(iter != attr.end()) {
-		mysql_options(handle, MYSQL_SET_CHARSET_NAME, iter->second.c_str());
+		mysql_options(handle->handle, MYSQL_SET_CHARSET_NAME, iter->second.c_str());
 	}
 	
 	iter = attr.find("mysql_shared_memory_base_name");
 	if(iter != attr.end()) {
-		mysql_options(handle, MYSQL_SHARED_MEMORY_BASE_NAME, iter->second.c_str());
+		mysql_options(handle->handle, MYSQL_SHARED_MEMORY_BASE_NAME, iter->second.c_str());
 	}
 	
 	iter = attr.find("mysql_read_default_group");
 	if(iter != attr.end()) {
-		mysql_options(handle, MYSQL_READ_DEFAULT_GROUP, iter->second.c_str());
+		mysql_options(handle->handle, MYSQL_READ_DEFAULT_GROUP, iter->second.c_str());
 	}
 	
 	iter = attr.find("mysql_ssl");
@@ -170,14 +183,14 @@ bool DBI::MySQLDatabaseHandle::Connect(std::string dbname, std::string host, std
 				cipher = iter->second;
 			}
 	
-			mysql_ssl_set(handle,
+			mysql_ssl_set(handle->handle,
 				client_key.empty() ? nullptr : client_key.c_str(),
 				client_cert.empty() ? nullptr : client_cert.c_str(),
 				ca_file.empty() ? nullptr : ca_file.c_str(),
 				ca_path.empty() ? nullptr : ca_path.c_str(),
 				cipher.empty() ? nullptr : cipher.c_str());
 	
-			mysql_options(handle, MYSQL_OPT_SSL_VERIFY_SERVER_CERT, &verify_true);
+			mysql_options(handle->handle, MYSQL_OPT_SSL_VERIFY_SERVER_CERT, &verify_true);
 			client_flag |= CLIENT_SSL;
 		}
 	}
@@ -194,7 +207,7 @@ bool DBI::MySQLDatabaseHandle::Connect(std::string dbname, std::string host, std
 		port = static_cast<int>(std::stoi(iter->second));
 	}
 	
-	MYSQL* result = mysql_real_connect(handle, host.c_str(), username.c_str(), auth.c_str(), dbname.c_str(), port, 
+	MYSQL* result = mysql_real_connect(handle->handle, host.c_str(), username.c_str(), auth.c_str(), dbname.c_str(), port, 
 		socket.empty() ? nullptr : socket.c_str(), client_flag);
 	
 	if(result) {
@@ -207,11 +220,11 @@ bool DBI::MySQLDatabaseHandle::Connect(std::string dbname, std::string host, std
 }
 
 bool DBI::MySQLDatabaseHandle::Disconnect() {
-	if(!handle)
+	if(!handle->handle)
 		return false;
 
-	mysql_close(handle);
-	handle = nullptr;
+	mysql_close(handle->handle);
+	handle->handle = nullptr;
 	return true;
 }
 
@@ -225,10 +238,12 @@ std::unique_ptr<DBI::ResultSet> DBI::MySQLDatabaseHandle::Do(std::string stmt, D
 }
 
 std::unique_ptr<DBI::ResultSet> DBI::MySQLDatabaseHandle::_basic_execute_server_side(std::string stmt, DBI::StatementArguments &args) {
-	assert(handle != nullptr);
-	MYSQL_STMT *my_stmt = mysql_stmt_init(handle);
+	assert(handle->handle != nullptr);
+	MYSQL_STMT *my_stmt = mysql_stmt_init(handle->handle);
 	if(mysql_stmt_prepare(my_stmt, stmt.c_str(), static_cast<unsigned long>(stmt.length()))) {
-		SetError(DBH_ERROR_PREPARE_FAILURE, "Unable to prepare statement in DBI::MySQLDatabaseHandle::_basic_execute_server_side(stmt, args).");
+		std::string err = mysql_stmt_error(my_stmt);
+		SetError(DBH_ERROR_PREPARE_FAILURE, err);
+		mysql_stmt_close(my_stmt);
 		return nullptr;
 	} else {
 		std::unique_ptr<MYSQL_BIND> params(nullptr);
@@ -457,19 +472,22 @@ std::unique_ptr<DBI::ResultSet> DBI::MySQLDatabaseHandle::_basic_execute_server_
 			}
 			
 			if(mysql_stmt_bind_param(my_stmt, params.get())) {
-				SetError(DBH_ERROR_BIND_FAILURE, "Could not bind params in DBI::MySQLDatabaseHandle::_basic_execute_server_side(stmt, args).");
+				std::string err = mysql_stmt_error(my_stmt);
+				SetError(DBH_ERROR_BIND_FAILURE, err);
 				mysql_stmt_close(my_stmt);
 				return nullptr;
 			}
 
 			if(mysql_stmt_execute(my_stmt)) {
-				SetError(DBH_ERROR_STMT_FAILURE, "Could not execute statement in DBI::MySQLDatabaseHandle::_basic_execute_server_side(stmt, args).");
+				std::string err = mysql_stmt_error(my_stmt);
+				SetError(DBH_ERROR_STMT_FAILURE, err);
 				mysql_stmt_close(my_stmt);
 				return nullptr;
 			}
 		} else {
 			if(mysql_stmt_execute(my_stmt)) {
-				SetError(DBH_ERROR_STMT_FAILURE, "Could not execute statement in DBI::MySQLDatabaseHandle::_basic_execute_server_side(stmt, args).");
+				std::string err = mysql_stmt_error(my_stmt);
+				SetError(DBH_ERROR_STMT_FAILURE, err);
 				mysql_stmt_close(my_stmt);
 				return nullptr;
 			}		
@@ -482,10 +500,11 @@ std::unique_ptr<DBI::ResultSet> DBI::MySQLDatabaseHandle::_basic_execute_server_
 }
 
 std::unique_ptr<DBI::StatementHandle> DBI::MySQLDatabaseHandle::Prepare(std::string stmt) {
-	assert(handle != nullptr);
-	MYSQL_STMT *my_stmt = mysql_stmt_init(handle);
-	if(mysql_stmt_prepare(my_stmt, stmt.c_str(), static_cast<unsigned long>(stmt.length()))) {		
-		SetError(DBH_ERROR_PREPARE_FAILURE, "Could not prepare statement in DBI::MySQLDatabaseHandle::Prepare(stmt).");
+	assert(handle->handle != nullptr);
+	MYSQL_STMT *my_stmt = mysql_stmt_init(handle->handle);
+	if(mysql_stmt_prepare(my_stmt, stmt.c_str(), static_cast<unsigned long>(stmt.length()))) {
+		std::string err = mysql_stmt_error(my_stmt);
+		SetError(DBH_ERROR_PREPARE_FAILURE, err);
 		mysql_stmt_close(my_stmt);
 		return nullptr;
 	}
@@ -495,9 +514,9 @@ std::unique_ptr<DBI::StatementHandle> DBI::MySQLDatabaseHandle::Prepare(std::str
 }
 
 bool DBI::MySQLDatabaseHandle::Ping() {
-	assert(handle != nullptr);
-	if(mysql_ping(handle)) {
-		SetError(DBH_ERROR_PING_CONNECTION, "Pinging the MySQL connection failed due to the server being gone and/or reconnect being disabled.");
+	assert(handle->handle != nullptr);
+	if(mysql_ping(handle->handle)) {
+		SetError(DBH_ERROR_PING_CONNECTION, "Pinging the MySQL connection failed.");
 		return false;
 	}
 
@@ -505,8 +524,8 @@ bool DBI::MySQLDatabaseHandle::Ping() {
 }
 
 bool DBI::MySQLDatabaseHandle::Begin() {
-	assert(handle != nullptr);
-	if(mysql_autocommit(handle, 0)) {
+	assert(handle->handle != nullptr);
+	if(mysql_autocommit(handle->handle, 0)) {
 		SetError(DBH_ERROR_BEGIN_FAILURE, "DBI::MySQLDatabaseHandle::Begin() failed.");
 		return false;
 	}
@@ -515,26 +534,26 @@ bool DBI::MySQLDatabaseHandle::Begin() {
 }
 
 bool DBI::MySQLDatabaseHandle::Commit() {
-	assert(handle != nullptr);
-	if(mysql_commit(handle)) {
-		mysql_autocommit(handle, 1);
+	assert(handle->handle != nullptr);
+	if(mysql_commit(handle->handle)) {
+		mysql_autocommit(handle->handle, 1);
 		SetError(DBH_ERROR_COMMIT_FAILURE, "DBI::MySQLDatabaseHandle::Commit() failed.");
 		return false;
 	}
 
-	mysql_autocommit(handle, 1);
+	mysql_autocommit(handle->handle, 1);
 	return true;
 }
 
 bool DBI::MySQLDatabaseHandle::Rollback() {
-	assert(handle != nullptr);
-	if(mysql_rollback(handle)) {
-		mysql_autocommit(handle, 1);
+	assert(handle->handle != nullptr);
+	if(mysql_rollback(handle->handle)) {
+		mysql_autocommit(handle->handle, 1);
 		SetError(DBH_ERROR_ROLLBACK_FAILURE, "DBI::MySQLDatabaseHandle::Rollback() failed.");
 		return false;
 	}
 
-	mysql_autocommit(handle, 1);
+	mysql_autocommit(handle->handle, 1);
 	return true;
 }
 

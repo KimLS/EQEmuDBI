@@ -17,7 +17,29 @@ int main() {
 		return 0;
 	}
 
-	auto rs = dbh->Do("UPDATE variables SET information = ? WHERE varname = ?", 
+	char *tdata = "hello\0world\0"; // len = 12
+	char *sql = "INSERT INTO btest(test_value) VALUES(?)";
+	
+	std::string mstr;
+	mstr.assign(tdata, 12);
+	
+	auto rs = dbh->Do("insert into btest(test_value) VALUES(?)", mstr);
+	if(rs) {
+		printf("Affected rows: %d\n", rs->AffectedRows());	
+	}
+	
+	rs = dbh->Do("select * from btest");
+	if(rs) {
+		auto iter = rs->Rows().begin();
+		while(iter != rs->Rows().end()) {
+			auto row = (*iter);
+			std::string v = row["test_value"].value;
+			printf("Retrieved: %d bytes\n", v.length());
+			++iter;
+		}	
+	}
+
+	/*auto rs = dbh->Do("UPDATE variables SET information = ? WHERE varname = ?", 
 		(const char*)"Some really crazy info here...", (const char*)"MOTD");
 	if(rs) {
 		printf("Affected rows: %d\n", ((DBI::MySQLResultSet*)rs.get())->AffectedRows());
@@ -37,7 +59,7 @@ int main() {
 			}
 			++iter;
 		}
-	}
+	}*/
 
 	getchar();
 	return 0;

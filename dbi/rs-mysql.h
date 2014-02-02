@@ -19,10 +19,8 @@ public:
 	}
 	virtual ~MySQLResultSet() { }
 	
-	unsigned long AffectedRows() const { return affected_rows; }
 	unsigned long LastInsertId() const { return last_insert_id; }
 private:
-	unsigned long affected_rows;
 	unsigned long last_insert_id;
 };
 

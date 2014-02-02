@@ -4,6 +4,9 @@
 #include "sth.h"
 #include "dbh-pg.h"
 
+struct pg_conn;
+typedef struct pg_conn PGconn;
+
 namespace DBI
 {
 

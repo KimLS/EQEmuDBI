@@ -46,7 +46,7 @@ std::unique_ptr<DBI::ResultSet> DBI::SQLiteDatabaseHandle::Do(std::string stmt) 
 
 std::unique_ptr<DBI::ResultSet> DBI::SQLiteDatabaseHandle::Do(std::string stmt, DBI::StatementArguments &args) {
 	sqlite3_stmt *my_stmt = nullptr;
-	int rc = sqlite3_prepare_v2(handle, stmt.c_str(), -1, &my_stmt, nullptr);
+	int rc = sqlite3_prepare_v2(handle, stmt.c_str(), (int)stmt.length() + 1, &my_stmt, nullptr);
 	if(rc != SQLITE_OK) {
 		std::string err = "Error: ";
 		err += sqlite3_errmsg(handle);
@@ -206,9 +206,7 @@ std::unique_ptr<DBI::ResultSet> DBI::SQLiteDatabaseHandle::Do(std::string stmt, 
 			} else if(t.type() == typeid(std::string)) {
 				try {
 					std::string v = DBI::any_cast<std::string>(t);
-					size_t len = v.length();
-					
-					if(sqlite3_bind_text(my_stmt, idx, v.c_str(), (int)len, nullptr) != SQLITE_OK) {
+					if(sqlite3_bind_text(my_stmt, idx, v.c_str(), (int)v.length(), SQLITE_TRANSIENT) != SQLITE_OK) {
 						sqlite3_finalize(my_stmt);
 						SetError(DBH_ERROR_INVALID_ARGS, "Could not bind std::string arg in DBI::SQLiteDatabaseHandle::Do(stmt, args).");
 						return nullptr;
@@ -222,7 +220,7 @@ std::unique_ptr<DBI::ResultSet> DBI::SQLiteDatabaseHandle::Do(std::string stmt, 
 					const char *v = DBI::any_cast<const char*>(t);
 					size_t len = strlen(v);
 					
-					if(sqlite3_bind_text(my_stmt, idx, v, (int)len, nullptr) != SQLITE_OK) {
+					if(sqlite3_bind_text(my_stmt, idx, v, (int)len, SQLITE_TRANSIENT) != SQLITE_OK) {
 						sqlite3_finalize(my_stmt);
 						SetError(DBH_ERROR_INVALID_ARGS, "Could not bind const char* arg in DBI::SQLiteDatabaseHandle::Do(stmt, args).");
 						return nullptr;
@@ -255,12 +253,14 @@ std::unique_ptr<DBI::ResultSet> DBI::SQLiteDatabaseHandle::Do(std::string stmt, 
 			for(int f = 0; f < fields; ++f) {
 				field_names.push_back(sqlite3_column_name(my_stmt, f));
 			}
+			field_names_found = true;
 		}
-
+	
 		DBI::ResultSet::Row row;
 		for(int f = 0; f < fields; ++f) {
 			DBI::ResultSet::FieldData fd;
 			fd.error = false;
+	
 			const unsigned char *v = sqlite3_column_text(my_stmt, f);
 			int len = sqlite3_column_bytes(my_stmt, f);
 			if(v) {
@@ -273,15 +273,16 @@ std::unique_ptr<DBI::ResultSet> DBI::SQLiteDatabaseHandle::Do(std::string stmt, 
 		}
 		rows.push_back(row);
 	}
-
+	
+	size_t affected_rows = (size_t)sqlite3_changes(handle);
+	std::unique_ptr<DBI::ResultSet> rs(new DBI::ResultSet(field_names, rows, affected_rows));
 	sqlite3_finalize(my_stmt);
-	std::unique_ptr<DBI::ResultSet> rs(new DBI::ResultSet(field_names, rows));
 	return rs;
 }
 
 std::unique_ptr<DBI::StatementHandle> DBI::SQLiteDatabaseHandle::Prepare(std::string stmt) {
 	sqlite3_stmt *my_stmt = nullptr;
-	int rc = sqlite3_prepare_v2(handle, stmt.c_str(), -1, &my_stmt, nullptr);
+	int rc = sqlite3_prepare_v2(handle, stmt.c_str(), stmt.length() + 1, &my_stmt, nullptr);
 	if(rc != SQLITE_OK) {
 		std::string err = "Error: ";
 		err += sqlite3_errmsg(handle);
@@ -292,7 +293,7 @@ std::unique_ptr<DBI::StatementHandle> DBI::SQLiteDatabaseHandle::Prepare(std::st
 		return false;
 	}
 	
-	std::unique_ptr<DBI::StatementHandle> res(new SQLiteStatementHandle(my_stmt));
+	std::unique_ptr<DBI::StatementHandle> res(new SQLiteStatementHandle(handle, my_stmt));
 	return res;
 }
 

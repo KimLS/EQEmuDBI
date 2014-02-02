@@ -18,7 +18,8 @@ public:
 	virtual std::unique_ptr<ResultSet> Execute();
 	virtual std::unique_ptr<ResultSet> Execute(StatementArguments &args);
 private:
-	MYSQL_STMT *statement;
+	struct STMTHandle;
+	STMTHandle *statement;
 };
 
 }

@@ -2,12 +2,6 @@
 #define DBI__DBH_MYSQL_H
 
 #include "dbh.h"
-#ifdef _WIN32
-#include <Windows.h>
-#endif
-#include <mysql.h>
-#include <mysqld_error.h>
-#include <errmsg.h>
 
 namespace DBI
 {
@@ -34,8 +28,9 @@ public:
 	virtual bool Rollback();
 
 private:
+	struct DBHandle;
 	std::unique_ptr<ResultSet> _basic_execute_server_side(std::string stmt, StatementArguments &args);
-	MYSQL *handle;
+	DBHandle *handle;
 };
 
 }
