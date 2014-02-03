@@ -331,9 +331,7 @@ std::unique_ptr<DBI::ResultSet> DBI::PGDatabaseHandle::Do(std::string stmt, DBI:
 		return rs;
 	}
 
-	std::string err = "PG Error: ";
-	char *err_str = PQresultErrorMessage(res);
-	err += err_str;
+	std::string err = PQresultErrorMessage(res);
 	SetError(DBH_ERROR_QUERY, err);
 
 	PQclear(res);

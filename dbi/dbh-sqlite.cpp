@@ -18,12 +18,51 @@ bool DBI::SQLiteDatabaseHandle::Connect(std::string dbname, std::string host, st
 		return false;
 	}
 
-	//plans to add options later!
-	int rc = sqlite3_open(dbname.c_str(), &handle);
+	int flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
+	std::string vfs;
+
+	auto iter = attr.find("sqlite_vfs");
+	if(iter != attr.end()) {
+		vfs = iter->second;
+	}
+
+	iter = attr.find("sqlite_nomutex");
+	if(iter != attr.end()) {
+		int v = static_cast<int>(std::stoi(iter->second));
+		if(v) {
+			flags |= SQLITE_OPEN_NOMUTEX;
+		}
+	}
+
+	iter = attr.find("sqlite_fullmutex");
+	if(iter != attr.end()) {
+		int v = static_cast<int>(std::stoi(iter->second));
+		if(v) {
+			flags |= SQLITE_OPEN_FULLMUTEX;
+		}
+	}
+
+	iter = attr.find("sqlite_sharedcache");
+	if(iter != attr.end()) {
+		int v = static_cast<int>(std::stoi(iter->second));
+		if(v) {
+			flags |= SQLITE_OPEN_SHAREDCACHE;
+		}
+	}
+
+	iter = attr.find("sqlite_privatecache");
+	if(iter != attr.end()) {
+		int v = static_cast<int>(std::stoi(iter->second));
+		if(v) {
+			flags |= SQLITE_OPEN_PRIVATECACHE;
+		}
+	}
+
+	int rc = sqlite3_open_v2(dbname.c_str(), &handle, flags, vfs.empty() ? nullptr : vfs.c_str());
 
 	if(rc) {
+		SetError(DBI_ERROR_FAILED_TO_CONNECT, sqlite3_errmsg(handle));
 		Disconnect();
-		SetError(DBI_ERROR_FAILED_TO_CONNECT, "Could not open the sqlite3 database.");
 		return false;
 	}
 

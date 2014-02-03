@@ -3,7 +3,6 @@
 #include "../dbi/dbh.h"
 #include "../dbi/sth.h"
 #include "../dbi/rs.h"
-#include "../dbi/sqlite3.h"
 
 int main() {
 	DBI::DatabaseAttributes attr;
