@@ -5,10 +5,9 @@
 #include <assert.h>
 #include <libpq-fe.h>
 
-static uint32_t statement_index = 0;
-
 DBI::PGDatabaseHandle::PGDatabaseHandle() {
 	handle = nullptr;
+	statement_index = 0;
 }
 
 DBI::PGDatabaseHandle::~PGDatabaseHandle() {
@@ -457,7 +456,16 @@ std::unique_ptr<DBI::ResultSet> DBI::_internal_results_from_postgresql(PGresult*
 					fd.is_null = true;
 				} else {
 					fd.is_null = false;
-					fd.value = PQgetvalue(res, r, f);
+					//Oid t = PQftype(res, f);
+					//if(t == BYTEAOID) {
+					//	fd.value.assign(PQgetvalue(res, r, f), (size_t)PQgetlength(res, r, f));
+					//	size_t len = 0;
+					//	unsigned char *pure = PQunescapeBytea((const unsigned char*)PQgetvalue(res, r, f), &len);
+					//	fd.value.assign((const char*)pure, len);
+					//	free(pure);
+					//} else {
+						fd.value.assign(PQgetvalue(res, r, f), (size_t)PQgetlength(res, r, f));
+					//}
 				}
 
 				row[PQfname(res, f)] = fd;

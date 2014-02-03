@@ -36,6 +36,7 @@ public:
 private:
 	std::string _process_query(std::string stmt, int *params = nullptr);
 	PGconn *handle;
+	uint32_t statement_index;
 };
 
 }
