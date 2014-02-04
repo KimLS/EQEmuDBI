@@ -201,12 +201,24 @@ std::unique_ptr<DBI::ResultSet> DBI::PGStatementHandle::Execute(StatementArgumen
 				try {
 					std::string v = DBI::any_cast<std::string>(t);
 					size_t len = v.length();
+					size_t clen = strlen(v.c_str());
 					
-					std::shared_ptr<char> t(new char[len + 1]);
-					paramValues.get()[i] = t.get();
-					strncpy(t.get(), v.c_str(), len);
-					t.get()[len] = 0;
-					paramSave.push_back(t);
+					if(len != clen) {
+						size_t conv_len = 0;
+						unsigned char* converted = PQescapeByteaConn(conn, (const unsigned char*)v.c_str(), len, &conv_len);
+						std::shared_ptr<char> t(new char[conv_len + 1]);
+						paramValues.get()[i] = t.get();
+						strncpy(t.get(), (const char*)converted, conv_len);
+						t.get()[conv_len] = 0;
+						paramSave.push_back(t);
+						PQfreemem(converted);
+					} else {
+						std::shared_ptr<char> t(new char[len + 1]);
+						paramValues.get()[i] = t.get();
+						strncpy(t.get(), v.c_str(), len);
+						t.get()[len] = 0;
+						paramSave.push_back(t);
+					}
 				} catch(DBI::bad_any_cast) {
 					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from std::string arg in DBI::PGStatementHandle::Execute(args).");
 					return nullptr;

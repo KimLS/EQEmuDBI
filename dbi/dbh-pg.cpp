@@ -5,6 +5,8 @@
 #include <assert.h>
 #include <libpq-fe.h>
 
+#define BYTEAOID 17
+
 DBI::PGDatabaseHandle::PGDatabaseHandle() {
 	handle = nullptr;
 	statement_index = 0;
@@ -290,12 +292,24 @@ std::unique_ptr<DBI::ResultSet> DBI::PGDatabaseHandle::Do(std::string stmt, DBI:
 				try {
 					std::string v = DBI::any_cast<std::string>(t);
 					size_t len = v.length();
+					size_t clen = strlen(v.c_str());
 					
-					std::shared_ptr<char> t(new char[len + 1]);
-					paramValues.get()[i] = t.get();
-					strncpy(t.get(), v.c_str(), len);
-					t.get()[len] = 0;
-					paramSave.push_back(t);
+					if(len != clen) {
+						size_t conv_len = 0;
+						unsigned char* converted = PQescapeByteaConn(handle, (const unsigned char*)v.c_str(), len, &conv_len);
+						std::shared_ptr<char> t(new char[conv_len + 1]);
+						paramValues.get()[i] = t.get();
+						strncpy(t.get(), (const char*)converted, conv_len);
+						t.get()[conv_len] = 0;
+						paramSave.push_back(t);
+						PQfreemem(converted);
+					} else {
+						std::shared_ptr<char> t(new char[len + 1]);
+						paramValues.get()[i] = t.get();
+						strncpy(t.get(), v.c_str(), len);
+						t.get()[len] = 0;
+						paramSave.push_back(t);
+					}
 				} catch(DBI::bad_any_cast) {
 					SetError(DBH_ERROR_INVALID_ARGS, "Could not convert from std::string arg in DBI::PGDatabaseHandle::Do(stmt, args).");
 					return nullptr;
@@ -425,9 +439,6 @@ std::string DBI::PGDatabaseHandle::_process_query(std::string stmt, int *params)
 			ret += std::to_string((unsigned long)current++);
 			if(params)
 				*params = *params + 1;
-		} else if(c == '$') {
-			ret.push_back('\\');
-			ret.push_back(c);
 		} else {
 			ret.push_back(c);
 		}
@@ -456,16 +467,15 @@ std::unique_ptr<DBI::ResultSet> DBI::_internal_results_from_postgresql(PGresult*
 					fd.is_null = true;
 				} else {
 					fd.is_null = false;
-					//Oid t = PQftype(res, f);
-					//if(t == BYTEAOID) {
-					//	fd.value.assign(PQgetvalue(res, r, f), (size_t)PQgetlength(res, r, f));
-					//	size_t len = 0;
-					//	unsigned char *pure = PQunescapeBytea((const unsigned char*)PQgetvalue(res, r, f), &len);
-					//	fd.value.assign((const char*)pure, len);
-					//	free(pure);
-					//} else {
+					Oid t = PQftype(res, f);
+					if(t == BYTEAOID) {
+						size_t len = 0;
+						unsigned char *pure = PQunescapeBytea((const unsigned char*)PQgetvalue(res, r, f), &len);
+						fd.value.assign((const char*)pure, len);
+						PQfreemem(pure);
+					} else {
 						fd.value.assign(PQgetvalue(res, r, f), (size_t)PQgetlength(res, r, f));
-					//}
+					}
 				}
 
 				row[PQfname(res, f)] = fd;
