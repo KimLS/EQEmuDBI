@@ -136,7 +136,24 @@ int main() {
 		return 0;
 	}
 
-	auto sth = dbh->Prepare("SELECT int_value, real_value, text_value, blob_value FROM db_test WHERE id = ?");
+	auto sth = dbh->Prepare("INSERT INTO db_test (id, int_value, real_value, text_value, blob_value) VALUES(?, ?, ?, ?, ?)");
+	if(!sth) {
+		PrintErr("Failed to create prepared statement.\n");
+		return 0;
+	}
+
+	rs = sth->Execute(6, 2134, 125.9, std::string("Test value"), blob_value);
+	if(rs) {
+		if(rs->AffectedRows() != 1) {
+			PrintErr("Failure to insert value: %s\n", dbh->ErrorMessage().c_str());
+			return 0;
+		}
+	} else {
+		PrintErr("Failure to get result from insert: %s\n", dbh->ErrorMessage().c_str());
+		return 0;
+	}
+
+	sth = dbh->Prepare("SELECT int_value, real_value, text_value, blob_value FROM db_test WHERE id = ?");
 	if(!sth) {
 		PrintErr("Failed to create prepared statement.\n");
 		return 0;
@@ -347,6 +364,65 @@ int main() {
 		if(!row["blob_value"].is_null) {
 			PrintErr("Row blob_value was incorrect value in row 5\n");
 			return 0;
+		}
+	} else {
+		PrintErr("Failure to get result from select: %s\n", dbh->ErrorMessage().c_str());
+		return 0;
+	}
+
+	rs = sth->Execute(6);
+	if(rs) {
+		if(rs->AffectedRows() != 1) {
+			PrintErr("Failure to select value: %s\n", dbh->ErrorMessage().c_str());
+			return 0;
+		}
+
+		auto row = (*rs->Rows().begin());
+		if(row["int_value"].is_null) {
+			PrintErr("Row int_value was incorrect value in row 6\n");
+			return 0;
+		} else {
+			uint64_t val = std::stoll(row["int_value"].value);
+			if(val != 2134) {
+				PrintErr("Row int_value was incorrect value in row 6\n");
+				return 0;
+			}
+		}
+
+		if(row["real_value"].is_null) {
+			PrintErr("Row real_value was incorrect value in row 6\n");
+			return 0;
+		} else {
+			double val = std::stod(row["real_value"].value);
+			if(val > 126.0 || val < 125.8) {
+				PrintErr("Row real_value was incorrect value in row 6\n");
+				return 0;
+			}
+		}
+
+		if(row["text_value"].is_null) {
+			PrintErr("Row text_value was incorrect value in row 6\n");
+			return 0;
+		} else {
+			if(row["text_value"].value.compare("Test value") != 0) {
+				PrintErr("Row text_value was incorrect value in row 6\n");
+				return 0;
+			}
+		}
+
+		if(row["blob_value"].is_null) {
+			PrintErr("Row blob_value was incorrect value in row 6\n");
+			return 0;
+		} else {
+			if(row["blob_value"].value.length() != 12) {
+				PrintErr("Row blob_value was incorrect length in row 6\n");
+				return 0;
+			}
+
+			if(memcmp(row["blob_value"].value.c_str(), "hello\0world\0", 12) != 0) {
+				PrintErr("Row blob_value was incorrect value in row 6\n");
+				return 0;
+			}
 		}
 	} else {
 		PrintErr("Failure to get result from select: %s\n", dbh->ErrorMessage().c_str());
