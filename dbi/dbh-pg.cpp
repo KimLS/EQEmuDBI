@@ -1,3 +1,20 @@
+/*
+	Copyright(C) 2014 EQEmu
+	
+	This program is free software; you can redistribute it and/or
+	modify it under the terms of the GNU General Public License
+	as published by the Free Software Foundation; either version 2
+	of the License, or (at your option) any later version.
+	
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+	
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 #include "dbh-pg.h"
 #include "sth-pg.h"
 #include "rs.h"
@@ -337,7 +354,7 @@ std::unique_ptr<DBI::ResultSet> DBI::PGDatabaseHandle::Do(std::string stmt, DBI:
 
 	PGresult *res = PQexecParams(handle, query.c_str(), (int)nParams, nullptr, paramValues.get(), nullptr, nullptr, 0); 
 	
-	std::unique_ptr<ResultSet> rs = _internal_results_from_postgresql(res);
+	std::unique_ptr<ResultSet> rs = DBI::PGDatabaseHandle::_internal_results_from_postgresql(res);
 
 	if(rs) {
 		PQclear(res);
@@ -447,7 +464,7 @@ std::string DBI::PGDatabaseHandle::_process_query(std::string stmt, int *params)
 	return ret;
 }
 
-std::unique_ptr<DBI::ResultSet> DBI::_internal_results_from_postgresql(PGresult* res) {
+std::unique_ptr<DBI::ResultSet> DBI::PGDatabaseHandle::_internal_results_from_postgresql(PGresult* res) {
 	assert(res != nullptr);
 	if(PQresultStatus(res) == PGRES_TUPLES_OK || PQresultStatus(res) == PGRES_COMMAND_OK) {
 		std::vector<std::string> field_names;
