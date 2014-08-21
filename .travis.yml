@@ -1,0 +1,14 @@
+language: cpp
+compiler: gcc
+before_install:
+  - sudo apt-get update -qq
+  - sudo apt-get install -y libmysqlclient-dev libpq-dev zlib1g-dev
+script:
+  - cmake -G "Unix Makefiles"
+  - make
+branches:
+  only: master
+notifications:
+  email: false
+  irc: false
+os: linux
