@@ -19,6 +19,7 @@
 #include "sth-mysql.h"
 #include "rs-mysql.h"
 #include <stdint.h>
+#include <string.h>
 #include <assert.h>
 
 #ifdef _WIN32

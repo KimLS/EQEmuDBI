@@ -20,6 +20,7 @@
 #include "rs.h"
 #include <stdint.h>
 #include <assert.h>
+#include <string.h>
 #include <libpq-fe.h>
 
 #define BYTEAOID 17
