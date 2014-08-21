@@ -20,7 +20,7 @@ Please check the following for a pretty exhaustive usage set:
 Dependencies
 ---
 
-Both dependencies are optional, if either are missing the respective components will simply not build by CMake.
+Both dependencies are optional, if either are missing the respective components will simply not built by CMake.
 
 For Windows:
 
