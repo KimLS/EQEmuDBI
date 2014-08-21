@@ -20,6 +20,7 @@
 #include "rs-mysql.h"
 #include <stdint.h>
 #include <string.h>
+#include <stddef.h>
 #include <assert.h>
 
 #ifdef _WIN32
