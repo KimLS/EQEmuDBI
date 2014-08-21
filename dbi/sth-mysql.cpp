@@ -244,7 +244,7 @@ std::unique_ptr<DBI::ResultSet> DBI::MySQLStatementHandle::Execute(StatementArgu
 					SetError(STH_ERROR_INVALID_ARGS, "Could not convert from const char* arg in DBI::MySQLStatementHandle::Execute(args).");
 					return nullptr;
 				}
-			} else if(t->type() == typeid(nullptr_t)) {
+			} else if(t->type() == typeid(std::nullptr_t)) {
 				params.get()[i].buffer_type = MYSQL_TYPE_NULL;
 				params.get()[i].buffer = nullptr;
 				params.get()[i].is_unsigned = 0;

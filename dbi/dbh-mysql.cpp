@@ -471,7 +471,7 @@ std::unique_ptr<DBI::ResultSet> DBI::MySQLDatabaseHandle::_basic_execute_server_
 						mysql_stmt_close(my_stmt);
 						return nullptr;
 					}
-				} else if(t->type() == typeid(nullptr_t)) {
+				} else if(t->type() == typeid(std::nullptr_t)) {
 					params.get()[i].buffer_type = MYSQL_TYPE_NULL;
 					params.get()[i].buffer = nullptr;
 					params.get()[i].is_unsigned = 0;
