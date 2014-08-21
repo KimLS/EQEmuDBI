@@ -21,7 +21,7 @@
 #include <stdint.h>
 #include <assert.h>
 #include <string.h>
-#include <stddef.h>
+#include <cstddef>
 #include <libpq-fe.h>
 
 #define BYTEAOID 17

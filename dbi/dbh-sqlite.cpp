@@ -21,7 +21,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <assert.h>
-#include <stddef.h>
+#include <cstddef>
 #include "sqlite3.h"
 
 DBI::SQLiteDatabaseHandle::SQLiteDatabaseHandle() : handle(nullptr) {
