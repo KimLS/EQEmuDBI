@@ -6,6 +6,7 @@ before_install:
 script:
   - cmake -G "Unix Makefiles"
   - make
+  - ./bin/sqlite_test
 branches:
   only: master
 notifications:
