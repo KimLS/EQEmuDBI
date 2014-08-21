@@ -596,7 +596,7 @@ std::unique_ptr<DBI::ResultSet> DBI::MySQLDatabaseHandle::_internal_results_from
 
 			MYSQL_FIELD *f = nullptr;
 			uint32_t i = 0;
-			while(f = mysql_fetch_field(res)) {
+			while((f = mysql_fetch_field(res)) != nullptr) {
 				field_names.push_back(std::string(f->name));
 				
 				buffers[i].reset(new char[f->length]);

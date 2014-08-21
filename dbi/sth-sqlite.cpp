@@ -217,7 +217,7 @@ std::unique_ptr<DBI::ResultSet> DBI::SQLiteStatementHandle::Execute(StatementArg
 	std::list<DBI::ResultSet::Row> rows;
 	bool field_names_found = false;
 	int fields = 0;
-	while(rc = sqlite3_step(stmt) == SQLITE_ROW) {
+	while((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
 		if(!field_names_found) {
 			fields = sqlite3_column_count(stmt);
 			for(int f = 0; f < fields; ++f) {
