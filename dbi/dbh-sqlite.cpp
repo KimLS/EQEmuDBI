@@ -112,7 +112,7 @@ std::unique_ptr<DBI::ResultSet> DBI::SQLiteDatabaseHandle::Do(std::string stmt, 
 		if(my_stmt) {
 			sqlite3_finalize(my_stmt);
 		}
-		return false;
+		return nullptr;
 	}
 
 	int idx = 1;
@@ -319,7 +319,7 @@ std::unique_ptr<DBI::ResultSet> DBI::SQLiteDatabaseHandle::Do(std::string stmt, 
 	std::list<DBI::ResultSet::Row> rows;
 	bool field_names_found = false;
 	int fields = 0;
-	while(rc = sqlite3_step(my_stmt) == SQLITE_ROW) {
+	while((rc = sqlite3_step(my_stmt)) == SQLITE_ROW) {
 		if(!field_names_found) {
 			fields = sqlite3_column_count(my_stmt);
 			for(int f = 0; f < fields; ++f) {
