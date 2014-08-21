@@ -19,6 +19,7 @@
 #include "rs.h"
 #include <stdint.h>
 #include <assert.h>
+#include <string.h>
 #include <memory>
 #include "sqlite3.h"
 
