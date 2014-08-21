@@ -356,7 +356,10 @@ std::unique_ptr<DBI::ResultSet> DBI::PGDatabaseHandle::Do(std::string stmt, DBI:
 
 	PGresult *res = PQexecParams(handle, query.c_str(), (int)nParams, nullptr, paramValues.get(), nullptr, nullptr, 0); 
 	
-	std::unique_ptr<ResultSet> rs = DBI::PGDatabaseHandle::_internal_results_from_postgresql(res);
+	std::unique_ptr<ResultSet> rs;
+	if(res) {
+		rs = DBI::PGDatabaseHandle::_internal_results_from_postgresql(res);
+	}
 
 	if(rs) {
 		PQclear(res);

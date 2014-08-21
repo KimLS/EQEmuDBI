@@ -37,6 +37,7 @@ int main() {
 	auto rs = dbh->Do("DROP TABLE IF EXISTS db_test");
 	if(!rs) {
 		PrintErr("Failure to drop table.");
+		return 1;
 	}
 
 	rs = dbh->Do("CREATE TABLE db_test ("
@@ -47,7 +48,7 @@ int main() {
 		"blob_value bytea)");
 
 	if(!rs) {
-		PrintErr("Failure to get result from create table. Error: %s", dbh->ErrorMessage().c_str());
+		PrintErr("Failure to create table: %s", dbh->ErrorMessage().c_str());
 		return 1;
 	}
 

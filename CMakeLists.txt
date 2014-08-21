@@ -12,8 +12,10 @@ IF(MSVC)
 	#Set our default locations for zlib/mysql based on x86/x64
 	IF(CMAKE_CL_64)
 		SET(MYSQL_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/mysql_x64")
+		SET(PostgreSQL_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/libpq_x64")
 	ELSE(CMAKE_CL_64)
 		SET(MYSQL_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/mysql_x86")
+		SET(PostgreSQL_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/libpq_x86")
 	ENDIF(CMAKE_CL_64)
 
 	ADD_DEFINITIONS(-D_CRT_SECURE_NO_WARNINGS)
