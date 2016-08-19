@@ -18,8 +18,6 @@
 #ifndef DBI__RS_H
 #define DBI__RS_H
 
-#include "dbi.h"
-
 namespace DBI
 {
 

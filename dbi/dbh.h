@@ -18,50 +18,68 @@
 #ifndef DBI__DBH_H
 #define DBI__DBH_H
 
-#include "dbi.h"
-#include "dbi-error.h"
+#include <stdexcept>
+#include <string>
+#include <memory>
+#include <vector>
+#include <list>
+#include <map>
+
+#include "rs.h"
+#include "sth.h"
 
 namespace DBI
 {
-
-class StatementHandle;
-class ResultSet;
-
-class DatabaseHandle : public ErrorHandler
-{
-public:
-	DatabaseHandle() { }
-	virtual ~DatabaseHandle() { }
+	typedef std::map<std::string, std::string> DatabaseAttributes;
+	class StatementHandle;
+	class ResultSet;
+	class DatabaseHandle
+	{
+	public:
+		DatabaseHandle() { }
+		virtual ~DatabaseHandle() { }
 	
-	virtual bool Connect(std::string dbname, std::string host, std::string username,
-		std::string auth, DatabaseAttributes &attr) = 0;
-	virtual bool Disconnect() = 0;
-	
-	virtual std::unique_ptr<ResultSet> Do(std::string stmt) = 0;
-	virtual std::unique_ptr<ResultSet> Do(std::string stmt, StatementArguments &args) = 0;
-	virtual std::unique_ptr<ResultSet> Do(std::string stmt, DBI::Any arg0);
-	virtual std::unique_ptr<ResultSet> Do(std::string stmt, DBI::Any arg0, DBI::Any arg1);
-	virtual std::unique_ptr<ResultSet> Do(std::string stmt, DBI::Any arg0, DBI::Any arg1, DBI::Any arg2);
-	virtual std::unique_ptr<ResultSet> Do(std::string stmt, DBI::Any arg0, DBI::Any arg1, DBI::Any arg2, DBI::Any arg3);
-	virtual std::unique_ptr<ResultSet> Do(std::string stmt, DBI::Any arg0, DBI::Any arg1, DBI::Any arg2, DBI::Any arg3, DBI::Any arg4);
-	virtual std::unique_ptr<ResultSet> Do(std::string stmt, DBI::Any arg0, DBI::Any arg1, DBI::Any arg2, DBI::Any arg3, DBI::Any arg4, DBI::Any arg5);
-	virtual std::unique_ptr<ResultSet> Do(std::string stmt, DBI::Any arg0, DBI::Any arg1, DBI::Any arg2, DBI::Any arg3, DBI::Any arg4, DBI::Any arg5,
-		DBI::Any arg6);
-	virtual std::unique_ptr<ResultSet> Do(std::string stmt, DBI::Any arg0, DBI::Any arg1, DBI::Any arg2, DBI::Any arg3, DBI::Any arg4, DBI::Any arg5,
-		DBI::Any arg6, DBI::Any arg7);
-	virtual std::unique_ptr<ResultSet> Do(std::string stmt, DBI::Any arg0, DBI::Any arg1, DBI::Any arg2, DBI::Any arg3, DBI::Any arg4, DBI::Any arg5,
-		DBI::Any arg6, DBI::Any arg7, DBI::Any arg8);
-	virtual std::unique_ptr<ResultSet> Do(std::string stmt, DBI::Any arg0, DBI::Any arg1, DBI::Any arg2, DBI::Any arg3, DBI::Any arg4, DBI::Any arg5,
-		DBI::Any arg6, DBI::Any arg7, DBI::Any arg8, DBI::Any arg9);
+		virtual void Connect(std::string dbname, std::string host, std::string username,
+			std::string auth, DatabaseAttributes &attr) = 0;
+		virtual void Disconnect() = 0;
 
-	virtual std::unique_ptr<StatementHandle> Prepare(std::string stmt) = 0;
+		virtual std::unique_ptr<StatementHandle> Prepare(std::string stmt) = 0;
 
-	virtual bool Ping() = 0;
-	virtual bool Begin() = 0;
-	virtual bool Commit() = 0;
-	virtual bool Rollback() = 0;
-};
+		virtual void Ping() = 0;
+		virtual void Begin() = 0;
+		virtual void Commit() = 0;
+		virtual void Rollback() = 0;
 
+		std::unique_ptr<ResultSet> Do(const std::string &stmt) {
+			InitDo(stmt);
+			return ExecuteDo();
+		}
+
+		template<typename T, typename... Args>
+		std::unique_ptr<ResultSet> Do(const std::string &stmt, T value, Args... args)
+		{
+			InitDo(stmt);
+			BindArg(value);
+			return Do(stmt, args...);
+		}
+
+	protected:
+		virtual void BindArg(int8_t v) = 0;
+		virtual void BindArg(uint8_t v) = 0;
+		virtual void BindArg(int16_t v) = 0;
+		virtual void BindArg(uint16_t v) = 0;
+		virtual void BindArg(int32_t v) = 0;
+		virtual void BindArg(uint32_t v) = 0;
+		virtual void BindArg(int64_t v) = 0;
+		virtual void BindArg(uint64_t v) = 0;
+		virtual void BindArg(float v) = 0;
+		virtual void BindArg(double v) = 0;
+		virtual void BindArg(const std::string &v) = 0;
+		virtual void BindArg(const char *v) = 0;
+		virtual void BindArg(std::nullptr_t v) = 0;
+		virtual std::unique_ptr<ResultSet> ExecuteDo() = 0;
+		virtual void InitDo(const std::string& stmt) = 0;
+	};
 }
 
 #endif

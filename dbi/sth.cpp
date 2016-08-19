@@ -18,6 +18,7 @@
 #include "sth.h"
 #include "rs.h"
 
+/*
 std::unique_ptr<DBI::ResultSet> DBI::StatementHandle::Execute(DBI::Any arg0) {
 	StatementArguments args(1, DBI::Any());
 	args[0] = arg0;
@@ -125,4 +126,4 @@ std::unique_ptr<DBI::ResultSet> DBI::StatementHandle::Execute(DBI::Any arg0, DBI
 	args[8] = arg8;
 	args[9] = arg9;
 	return Execute(args);
-}
+}*/

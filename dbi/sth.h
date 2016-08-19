@@ -18,36 +18,54 @@
 #ifndef DBI__STH_H
 #define DBI__STH_H
 
-#include "dbi.h"
-#include "dbi-error.h"
-
 namespace DBI
 {
 
 class ResultSet;
 
-class StatementHandle : public ErrorHandler
+class StatementHandle
 {
 public:
 	StatementHandle() { }
 	virtual ~StatementHandle() { }
 	
-	virtual std::unique_ptr<ResultSet> Execute() = 0;
-	virtual std::unique_ptr<ResultSet> Execute(StatementArguments &args) = 0;
-	virtual std::unique_ptr<ResultSet> Execute(DBI::Any arg0);
-	virtual std::unique_ptr<ResultSet> Execute(DBI::Any arg0, DBI::Any arg1);
-	virtual std::unique_ptr<ResultSet> Execute(DBI::Any arg0, DBI::Any arg1, DBI::Any arg2);
-	virtual std::unique_ptr<ResultSet> Execute(DBI::Any arg0, DBI::Any arg1, DBI::Any arg2, DBI::Any arg3);
-	virtual std::unique_ptr<ResultSet> Execute(DBI::Any arg0, DBI::Any arg1, DBI::Any arg2, DBI::Any arg3, DBI::Any arg4);
-	virtual std::unique_ptr<ResultSet> Execute(DBI::Any arg0, DBI::Any arg1, DBI::Any arg2, DBI::Any arg3, DBI::Any arg4, DBI::Any arg5);
-	virtual std::unique_ptr<ResultSet> Execute(DBI::Any arg0, DBI::Any arg1, DBI::Any arg2, DBI::Any arg3, DBI::Any arg4, DBI::Any arg5,
-		DBI::Any arg6);
-	virtual std::unique_ptr<ResultSet> Execute(DBI::Any arg0, DBI::Any arg1, DBI::Any arg2, DBI::Any arg3, DBI::Any arg4, DBI::Any arg5,
-		DBI::Any arg6, DBI::Any arg7);
-	virtual std::unique_ptr<ResultSet> Execute(DBI::Any arg0, DBI::Any arg1, DBI::Any arg2, DBI::Any arg3, DBI::Any arg4, DBI::Any arg5,
-		DBI::Any arg6, DBI::Any arg7, DBI::Any arg8);
-	virtual std::unique_ptr<ResultSet> Execute(DBI::Any arg0, DBI::Any arg1, DBI::Any arg2, DBI::Any arg3, DBI::Any arg4, DBI::Any arg5,
-		DBI::Any arg6, DBI::Any arg7, DBI::Any arg8, DBI::Any arg9);
+	std::unique_ptr<ResultSet> Execute() {
+		return InternalExecute();
+	}
+
+	template<typename T, typename... Args>
+	std::unique_ptr<ResultSet> Execute(T value, Args... args)
+	{
+		BindArg(value, 1);
+		return _Execute(2, args...);
+	}
+
+protected:
+	std::unique_ptr<ResultSet> _Execute(int i) {
+		return InternalExecute();
+	}
+
+	template<typename T, typename... Args>
+	std::unique_ptr<ResultSet> _Execute(int i, T value, Args... args)
+	{
+		BindArg(value, i);
+		return _Execute(i + 1, args...);
+	}
+
+	virtual void BindArg(int8_t v, int i) = 0;
+	virtual void BindArg(uint8_t v, int i) = 0;
+	virtual void BindArg(int16_t v, int i) = 0;
+	virtual void BindArg(uint16_t v, int i) = 0;
+	virtual void BindArg(int32_t v, int i) = 0;
+	virtual void BindArg(uint32_t v, int i) = 0;
+	virtual void BindArg(int64_t v, int i) = 0;
+	virtual void BindArg(uint64_t v, int i) = 0;
+	virtual void BindArg(float v, int i) = 0;
+	virtual void BindArg(double v, int i) = 0;
+	virtual void BindArg(const std::string &v, int i) = 0;
+	virtual void BindArg(const char *v, int i) = 0;
+	virtual void BindArg(std::nullptr_t v, int i) = 0;
+	virtual std::unique_ptr<ResultSet> InternalExecute() = 0;
 };
 
 }

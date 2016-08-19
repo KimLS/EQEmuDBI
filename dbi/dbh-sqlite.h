@@ -21,6 +21,7 @@
 #include "dbh.h"
 
 struct sqlite3;
+struct sqlite3_stmt;
 
 namespace DBI
 {
@@ -28,26 +29,40 @@ namespace DBI
 class SQLiteDatabaseHandle : public DatabaseHandle
 {
 public:
+	SQLiteDatabaseHandle();
 	virtual ~SQLiteDatabaseHandle();
 	
-	virtual bool Connect(std::string dbname, std::string host, std::string username,
+	virtual void Connect(std::string dbname, std::string host, std::string username,
 		std::string auth, DatabaseAttributes &attr);
-	virtual bool Disconnect();
+	virtual void Disconnect();
 	
-	virtual std::unique_ptr<ResultSet> Do(std::string stmt);
-	virtual std::unique_ptr<ResultSet> Do(std::string stmt, StatementArguments &args);
 	virtual std::unique_ptr<StatementHandle> Prepare(std::string stmt);
 
-	virtual bool Ping();
-	virtual bool Begin();
-	virtual bool Commit();
-	virtual bool Rollback();
+	virtual void Ping();
+	virtual void Begin();
+	virtual void Commit();
+	virtual void Rollback();
 
-private:
-	SQLiteDatabaseHandle();
-	sqlite3 *handle;
+protected:
+	virtual void BindArg(int8_t v);
+	virtual void BindArg(uint8_t v);
+	virtual void BindArg(int16_t v);
+	virtual void BindArg(uint16_t v);
+	virtual void BindArg(int32_t v);
+	virtual void BindArg(uint32_t v);
+	virtual void BindArg(int64_t v);
+	virtual void BindArg(uint64_t v);
+	virtual void BindArg(float v);
+	virtual void BindArg(double v);
+	virtual void BindArg(const std::string &v);
+	virtual void BindArg(const char *v);
+	virtual void BindArg(std::nullptr_t v);
+	virtual std::unique_ptr<ResultSet> ExecuteDo();
+	virtual void InitDo(const std::string& stmt);
 
-	friend class DBI::DatabaseInterface;
+	sqlite3 *m_handle;
+	int m_arg;
+	sqlite3_stmt *m_do_stmt;
 };
 
 }

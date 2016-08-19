@@ -18,168 +18,111 @@
 
 #include <stdio.h>
 #include <string.h>
-#include "../dbi/dbi.h"
-#include "../dbi/dbh.h"
-#include "../dbi/sth.h"
-#include "../dbi/rs.h"
+#include "../dbi/dbh-sqlite.h"
 
 #define PrintErr(x, ...) printf("Error at line %d: " x "\n", __LINE__, ##__VA_ARGS__)
 
 int main() {
-	DBI::DatabaseAttributes attr;
-	
-	auto dbh = DBI::DatabaseInterface::Instance()->Connect("sqlite", "test.db", "", "", "", attr);
-	if(!dbh) {
-		PrintErr("Failure to connect.");
-		return 1;
-	}
+	try {
+		DBI::DatabaseAttributes attr;
+		auto dbh = new DBI::SQLiteDatabaseHandle();
+		dbh->Connect("test.db", "", "", "", attr);
 
-	auto rs = dbh->Do("DROP TABLE IF EXISTS db_test");
-	if(!rs) {
-		PrintErr("Failure to drop table.");
-	}
-
-	rs = dbh->Do("CREATE TABLE db_test ("
-		"id INTEGER,"
-		"int_value INTEGER,"
-		"real_value REAL,"
-		"text_value TEXT,"
-		"blob_value BLOB)");
-
-	if(!rs) {
-		PrintErr("Failure to get result from create table. Error: %s", dbh->ErrorMessage().c_str());
-		return 1;
-	}
-
-	if(!dbh->Ping()) {
-		PrintErr("Failed to ping.");
-		return 1;
-	}
-
-	if(!dbh->Begin()) {
-		PrintErr("Failed to begin.");
-		return 1;
-	}
-
-	rs = dbh->Do("INSERT INTO db_test (id, int_value, real_value, text_value, blob_value) VALUES(?, ?, ?, ?, ?)",
-		1,
-		nullptr,
-		nullptr,
-		nullptr,
-		nullptr);
-
-	if(rs) {
-		if(rs->AffectedRows() != 1) {
-			PrintErr("Failure to insert value: %s", dbh->ErrorMessage().c_str());
+		if (!dbh) {
+			PrintErr("Failure to connect.");
 			return 1;
 		}
-	} else {
-		PrintErr("Failure to get result from insert: %s", dbh->ErrorMessage().c_str());
-		return 1;
-	}
 
-	std::string blob_value;
-	blob_value.assign("hello\0world\0", 12);
-	rs = dbh->Do("INSERT INTO db_test (id, int_value, real_value, text_value, blob_value) VALUES(?, ?, ?, ?, ?)",
-		2,
-		(uint8_t)5,
-		(float)125.90,
-		std::string("A test value"),
-		blob_value);
+		dbh->Do("DROP TABLE IF EXISTS db_test");
 
-	if(rs) {
-		if(rs->AffectedRows() != 1) {
-			PrintErr("Failure to insert value: %s", dbh->ErrorMessage().c_str());
+		dbh->Do("CREATE TABLE db_test ("
+			"id INTEGER,"
+			"int_value INTEGER,"
+			"real_value REAL,"
+			"text_value TEXT,"
+			"blob_value BLOB)");
+
+		dbh->Ping();
+
+		dbh->Begin();
+
+		auto rs = dbh->Do("INSERT INTO db_test (id, int_value, real_value, text_value, blob_value) VALUES(?, ?, ?, ?, ?)",
+			1,
+			nullptr,
+			nullptr,
+			nullptr,
+			nullptr);
+
+		if (rs->AffectedRows() != 1) {
+			PrintErr("Failure to insert value");
 			return 1;
 		}
-	} else {
-		PrintErr("Failure to get result from insert: %s", dbh->ErrorMessage().c_str());
-		return 1;
-	}
 
-	rs = dbh->Do("INSERT INTO db_test (id, int_value, real_value, text_value, blob_value) VALUES(?, ?, ?, ?, ?)",
-		3,
-		(uint16_t)556,
-		(double)125.90,
-		nullptr,
-		nullptr);
+		std::string blob_value;
+		blob_value.assign("hello\0world\0", 12);
+		rs = dbh->Do("INSERT INTO db_test (id, int_value, real_value, text_value, blob_value) VALUES(?, ?, ?, ?, ?)",
+			2,
+			(uint8_t)5,
+			(float)125.90,
+			std::string("A test value"),
+			blob_value);
 
-	if(rs) {
-		if(rs->AffectedRows() != 1) {
-			PrintErr("Failure to insert value: %s", dbh->ErrorMessage().c_str());
+		if (rs->AffectedRows() != 1) {
+			PrintErr("Failure to insert value");
 			return 1;
 		}
-	} else {
-		PrintErr("Failure to get result from insert: %s", dbh->ErrorMessage().c_str());
-		return 1;
-	}
 
-	rs = dbh->Do("INSERT INTO db_test (id, int_value, real_value, text_value, blob_value) VALUES(?, ?, ?, ?, ?)",
-		4,
-		(uint32_t)518012,
-		nullptr,
-		nullptr,
-		nullptr);
+		rs = dbh->Do("INSERT INTO db_test (id, int_value, real_value, text_value, blob_value) VALUES(?, ?, ?, ?, ?)",
+			3,
+			(uint16_t)556,
+			(double)125.90,
+			nullptr,
+			nullptr);
 
-	if(rs) {
-		if(rs->AffectedRows() != 1) {
-			PrintErr("Failure to insert value: %s", dbh->ErrorMessage().c_str());
+		if (rs->AffectedRows() != 1) {
+			PrintErr("Failure to insert value");
 			return 1;
 		}
-	} else {
-		PrintErr("Failure to get result from insert: %s", dbh->ErrorMessage().c_str());
-		return 1;
-	}
 
-	rs = dbh->Do("INSERT INTO db_test (id, int_value, real_value, text_value, blob_value) VALUES(?, ?, ?, ?, ?)",
-		5,
-		(uint64_t)42949672960,
-		nullptr,
-		nullptr,
-		nullptr);
+		rs = dbh->Do("INSERT INTO db_test (id, int_value, real_value, text_value, blob_value) VALUES(?, ?, ?, ?, ?)",
+			4,
+			(uint32_t)518012,
+			nullptr,
+			nullptr,
+			nullptr);
 
-	if(rs) {
-		if(rs->AffectedRows() != 1) {
-			PrintErr("Failure to insert value: %s", dbh->ErrorMessage().c_str());
+		if (rs->AffectedRows() != 1) {
+			PrintErr("Failure to insert value");
 			return 1;
 		}
-	} else {
-		PrintErr("Failure to get result from insert: %s", dbh->ErrorMessage().c_str());
-		return 1;
-	}
 
-	if(!dbh->Commit()) {
-		PrintErr("Failed to commit.");
-		return 1;
-	}
+		rs = dbh->Do("INSERT INTO db_test (id, int_value, real_value, text_value, blob_value) VALUES(?, ?, ?, ?, ?)",
+			5,
+			(uint64_t)42949672960,
+			nullptr,
+			nullptr,
+			nullptr);
 
-	auto sth = dbh->Prepare("INSERT INTO db_test (id, int_value, real_value, text_value, blob_value) VALUES(?, ?, ?, ?, ?)");
-	if(!sth) {
-		PrintErr("Failed to create prepared statement.");
-		return 1;
-	}
-
-	rs = sth->Execute(6, 2134, 125.9, std::string("Test value"), blob_value);
-	if(rs) {
-		if(rs->AffectedRows() != 1) {
-			PrintErr("Failure to insert value: %s", dbh->ErrorMessage().c_str());
+		if (rs->AffectedRows() != 1) {
+			PrintErr("Failure to insert value");
 			return 1;
 		}
-	} else {
-		PrintErr("Failure to get result from insert: %s", dbh->ErrorMessage().c_str());
-		return 1;
-	}
 
-	sth = dbh->Prepare("SELECT int_value, real_value, text_value, blob_value FROM db_test WHERE id = ?");
-	if(!sth) {
-		PrintErr("Failed to create prepared statement.");
-		return 1;
-	}
+		dbh->Commit();
 
-	rs = sth->Execute(1);
-	if(rs) {
+		auto sth = dbh->Prepare("INSERT INTO db_test (id, int_value, real_value, text_value, blob_value) VALUES(?, ?, ?, ?, ?)");
+		rs = sth->Execute(6, 2134, 125.9, std::string("Test value"), blob_value);
 		if(rs->AffectedRows() != 1) {
-			PrintErr("Failure to select value: %s", dbh->ErrorMessage().c_str());
+			PrintErr("Failure to insert value");
+			return 1;
+		}
+
+
+		sth = dbh->Prepare("SELECT int_value, real_value, text_value, blob_value FROM db_test WHERE id = ?");
+
+		rs = sth->Execute(1);
+		if(rs->AffectedRows() != 1) {
+			PrintErr("Failure to select value");
 			return 1;
 		}
 
@@ -203,19 +146,14 @@ int main() {
 			PrintErr("Row blob_value was incorrect value in row 1");
 			return 1;
 		}
-	} else {
-		PrintErr("Failure to get result from select: %s", dbh->ErrorMessage().c_str());
-		return 1;
-	}
 
-	rs = sth->Execute(2);
-	if(rs) {
+		rs = sth->Execute(2);
 		if(rs->AffectedRows() != 1) {
-			PrintErr("Failure to select value: %s", dbh->ErrorMessage().c_str());
+			PrintErr("Failure to select value");
 			return 1;
 		}
 
-		auto row = (*rs->Rows().begin());
+		row = (*rs->Rows().begin());
 		if(row["int_value"].is_null) {
 			PrintErr("Row int_value was incorrect value in row 2");
 			return 1;
@@ -262,19 +200,14 @@ int main() {
 				return 1;
 			}
 		}
-	} else {
-		PrintErr("Failure to get result from select: %s", dbh->ErrorMessage().c_str());
-		return 1;
-	}
 
-	rs = sth->Execute(3);
-	if(rs) {
+		rs = sth->Execute(3);
 		if(rs->AffectedRows() != 1) {
-			PrintErr("Failure to select value: %s", dbh->ErrorMessage().c_str());
+			PrintErr("Failure to select value");
 			return 1;
 		}
 
-		auto row = (*rs->Rows().begin());
+		row = (*rs->Rows().begin());
 		if(row["int_value"].is_null) {
 			PrintErr("Row int_value was incorrect value in row 3");
 			return 1;
@@ -306,19 +239,14 @@ int main() {
 			PrintErr("Row blob_value was incorrect value in row 3");
 			return 1;
 		}
-	} else {
-		PrintErr("Failure to get result from select: %s", dbh->ErrorMessage().c_str());
-		return 1;
-	}
 
-	rs = sth->Execute(4);
-	if(rs) {
+		rs = sth->Execute(4);
 		if(rs->AffectedRows() != 1) {
-			PrintErr("Failure to select value: %s", dbh->ErrorMessage().c_str());
+			PrintErr("Failure to select value");
 			return 1;
 		}
 
-		auto row = (*rs->Rows().begin());
+		row = (*rs->Rows().begin());
 		if(row["int_value"].is_null) {
 			PrintErr("Row int_value was incorrect value in row 4");
 			return 1;
@@ -344,19 +272,14 @@ int main() {
 			PrintErr("Row blob_value was incorrect value in row 4");
 			return 1;
 		}
-	} else {
-		PrintErr("Failure to get result from select: %s", dbh->ErrorMessage().c_str());
-		return 1;
-	}
 
-	rs = sth->Execute(5);
-	if(rs) {
+		rs = sth->Execute(5);
 		if(rs->AffectedRows() != 1) {
-			PrintErr("Failure to select value: %s", dbh->ErrorMessage().c_str());
+			PrintErr("Failure to select value");
 			return 1;
 		}
 
-		auto row = (*rs->Rows().begin());
+		row = (*rs->Rows().begin());
 		if(row["int_value"].is_null) {
 			PrintErr("Row int_value was incorrect value in row 5");
 			return 1;
@@ -382,19 +305,14 @@ int main() {
 			PrintErr("Row blob_value was incorrect value in row 5");
 			return 1;
 		}
-	} else {
-		PrintErr("Failure to get result from select: %s", dbh->ErrorMessage().c_str());
-		return 1;
-	}
 
-	rs = sth->Execute(6);
-	if(rs) {
+		rs = sth->Execute(6);
 		if(rs->AffectedRows() != 1) {
-			PrintErr("Failure to select value: %s", dbh->ErrorMessage().c_str());
+			PrintErr("Failure to select value");
 			return 1;
 		}
 
-		auto row = (*rs->Rows().begin());
+		row = (*rs->Rows().begin());
 		if(row["int_value"].is_null) {
 			PrintErr("Row int_value was incorrect value in row 6");
 			return 1;
@@ -440,9 +358,10 @@ int main() {
 				PrintErr("Row blob_value was incorrect value in row 6");
 				return 1;
 			}
-		}
-	} else {
-		PrintErr("Failure to get result from select: %s", dbh->ErrorMessage().c_str());
+			}
+	}
+	catch (std::exception &ex) {
+		printf("Tests failed with message: %s", ex.what());
 		return 1;
 	}
 

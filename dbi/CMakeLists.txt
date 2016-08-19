@@ -1,31 +1,21 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
 SET(dbi_sources
-	dbh.cpp
-    dbi.cpp
-	dbi-error.cpp
-	sth.cpp
 )
 
 SET(dbi_headers
-	any.h
 	dbh.h
-    dbi.h
-	dbi-error.h
 	rs.h
 	sth.h
 )
 
-IF(DBI_USE_SQLITE)
-	SET(dbi_sources
-		${dbi_sources} sqlite3.c dbh-sqlite.cpp sth-sqlite.cpp
-	)
+SET(dbi_sources
+	${dbi_sources} sqlite3.c dbh-sqlite.cpp sth-sqlite.cpp
+)
 	
-	SET(dbi_headers
-		${dbi_headers} dbh-sqlite.h sth-sqlite.h
-	)
-
-ENDIF(DBI_USE_SQLITE)
+SET(dbi_headers
+	${dbi_headers} dbh-sqlite.h sth-sqlite.h
+)
 
 IF(MySQL_FOUND)
 	SET(dbi_sources
@@ -59,12 +49,6 @@ IF(PostgreSQL_FOUND)
 	ADD_DEFINITIONS(-DPOSTGRESQL_ENGINE)
 ENDIF(PostgreSQL_FOUND)
 
-IF(DBI_USE_SQLITE)
-	ADD_DEFINITIONS(-DSQLITE_ENGINE)
-ENDIF(DBI_USE_SQLITE)
-
-IF(UNIX)
-    ADD_DEFINITIONS(-fPIC)
-ENDIF(UNIX)
+ADD_DEFINITIONS(-DSQLITE_ENGINE)
 
 SET(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
