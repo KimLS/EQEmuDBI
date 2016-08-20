@@ -26,7 +26,6 @@
 #include "sqlite3.h"
 
 DBI::SQLiteDatabaseHandle::SQLiteDatabaseHandle() : m_handle(nullptr) {
-	m_arg = 0;
 	m_do_stmt = nullptr;
 }
 
@@ -129,238 +128,208 @@ void DBI::SQLiteDatabaseHandle::Rollback() {
 	Do("ROLLBACK");
 }
 
-void DBI::SQLiteDatabaseHandle::BindArg(int8_t v)
-{
-	if (m_do_stmt == nullptr) {
-		return;
+void DBI::SQLiteDatabaseHandle::BindArg(bool v, int i) {
+	int8_t t = 0;
+	if (v) {
+		t = 1;
 	}
 
-	if (sqlite3_bind_int(m_do_stmt, m_arg, (int)v) != SQLITE_OK) {
-		sqlite3_finalize(m_do_stmt);
-		m_do_stmt = nullptr;
-		m_arg = 0;
-		std::string err = "Bind failure: ";
-		err += sqlite3_errmsg(m_handle);
-		throw std::runtime_error(err);
-	}
-
-	m_arg++;
+	BindArg(t, i);
 }
 
-void DBI::SQLiteDatabaseHandle::BindArg(uint8_t v)
+void DBI::SQLiteDatabaseHandle::BindArg(int8_t v, int i)
 {
 	if (m_do_stmt == nullptr) {
 		return;
 	}
 
-	if (sqlite3_bind_int(m_do_stmt, m_arg, (int)v) != SQLITE_OK) {
+	if (sqlite3_bind_int(m_do_stmt, i, (int)v) != SQLITE_OK) {
 		sqlite3_finalize(m_do_stmt);
 		m_do_stmt = nullptr;
-		m_arg = 0;
 		std::string err = "Bind failure: ";
 		err += sqlite3_errmsg(m_handle);
 		throw std::runtime_error(err);
 	}
-
-	m_arg++;
 }
 
-void DBI::SQLiteDatabaseHandle::BindArg(int16_t v)
+void DBI::SQLiteDatabaseHandle::BindArg(uint8_t v, int i)
 {
 	if (m_do_stmt == nullptr) {
 		return;
 	}
 
-	if (sqlite3_bind_int(m_do_stmt, m_arg, (int)v) != SQLITE_OK) {
+	if (sqlite3_bind_int(m_do_stmt, i, (int)v) != SQLITE_OK) {
 		sqlite3_finalize(m_do_stmt);
 		m_do_stmt = nullptr;
-		m_arg = 0;
 		std::string err = "Bind failure: ";
 		err += sqlite3_errmsg(m_handle);
 		throw std::runtime_error(err);
 	}
-
-	m_arg++;
 }
 
-void DBI::SQLiteDatabaseHandle::BindArg(uint16_t v)
+void DBI::SQLiteDatabaseHandle::BindArg(int16_t v, int i)
 {
 	if (m_do_stmt == nullptr) {
 		return;
 	}
 
-	if (sqlite3_bind_int(m_do_stmt, m_arg, (int)v) != SQLITE_OK) {
+	if (sqlite3_bind_int(m_do_stmt, i, (int)v) != SQLITE_OK) {
 		sqlite3_finalize(m_do_stmt);
 		m_do_stmt = nullptr;
-		m_arg = 0;
 		std::string err = "Bind failure: ";
 		err += sqlite3_errmsg(m_handle);
 		throw std::runtime_error(err);
 	}
-
-	m_arg++;
 }
 
-void DBI::SQLiteDatabaseHandle::BindArg(int32_t v)
+void DBI::SQLiteDatabaseHandle::BindArg(uint16_t v, int i)
 {
 	if (m_do_stmt == nullptr) {
 		return;
 	}
 
-	if (sqlite3_bind_int(m_do_stmt, m_arg, (int)v) != SQLITE_OK) {
+	if (sqlite3_bind_int(m_do_stmt, i, (int)v) != SQLITE_OK) {
 		sqlite3_finalize(m_do_stmt);
 		m_do_stmt = nullptr;
-		m_arg = 0;
 		std::string err = "Bind failure: ";
 		err += sqlite3_errmsg(m_handle);
 		throw std::runtime_error(err);
 	}
-
-	m_arg++;
 }
 
-void DBI::SQLiteDatabaseHandle::BindArg(uint32_t v)
+void DBI::SQLiteDatabaseHandle::BindArg(int32_t v, int i)
 {
 	if (m_do_stmt == nullptr) {
 		return;
 	}
 
-	if (sqlite3_bind_int(m_do_stmt, m_arg, (int)v) != SQLITE_OK) {
+	if (sqlite3_bind_int(m_do_stmt, 1, (int)v) != SQLITE_OK) {
 		sqlite3_finalize(m_do_stmt);
 		m_do_stmt = nullptr;
-		m_arg = 0;
 		std::string err = "Bind failure: ";
 		err += sqlite3_errmsg(m_handle);
 		throw std::runtime_error(err);
 	}
-
-	m_arg++;
 }
 
-void DBI::SQLiteDatabaseHandle::BindArg(int64_t v)
+void DBI::SQLiteDatabaseHandle::BindArg(uint32_t v, int i)
 {
 	if (m_do_stmt == nullptr) {
 		return;
 	}
 
-	if (sqlite3_bind_int64(m_do_stmt, m_arg, (int64_t)v) != SQLITE_OK) {
+	if (sqlite3_bind_int(m_do_stmt, i, (int)v) != SQLITE_OK) {
 		sqlite3_finalize(m_do_stmt);
 		m_do_stmt = nullptr;
-		m_arg = 0;
 		std::string err = "Bind failure: ";
 		err += sqlite3_errmsg(m_handle);
 		throw std::runtime_error(err);
 	}
-
-	m_arg++;
 }
 
-void DBI::SQLiteDatabaseHandle::BindArg(uint64_t v)
+void DBI::SQLiteDatabaseHandle::BindArg(int64_t v, int i)
 {
 	if (m_do_stmt == nullptr) {
 		return;
 	}
 
-	if (sqlite3_bind_int64(m_do_stmt, m_arg, (int64_t)v) != SQLITE_OK) {
+	if (sqlite3_bind_int64(m_do_stmt, i, (int64_t)v) != SQLITE_OK) {
 		sqlite3_finalize(m_do_stmt);
 		m_do_stmt = nullptr;
-		m_arg = 0;
 		std::string err = "Bind failure: ";
 		err += sqlite3_errmsg(m_handle);
 		throw std::runtime_error(err);
 	}
-
-	m_arg++;
 }
 
-void DBI::SQLiteDatabaseHandle::BindArg(float v)
+void DBI::SQLiteDatabaseHandle::BindArg(uint64_t v, int i)
 {
 	if (m_do_stmt == nullptr) {
 		return;
 	}
 
-	if (sqlite3_bind_double(m_do_stmt, m_arg, (double)v) != SQLITE_OK) {
+	if (sqlite3_bind_int64(m_do_stmt, i, (int64_t)v) != SQLITE_OK) {
 		sqlite3_finalize(m_do_stmt);
 		m_do_stmt = nullptr;
-		m_arg = 0;
 		std::string err = "Bind failure: ";
 		err += sqlite3_errmsg(m_handle);
 		throw std::runtime_error(err);
 	}
-
-	m_arg++;
 }
 
-void DBI::SQLiteDatabaseHandle::BindArg(double v)
+void DBI::SQLiteDatabaseHandle::BindArg(float v, int i)
 {
 	if (m_do_stmt == nullptr) {
 		return;
 	}
 
-	if (sqlite3_bind_double(m_do_stmt, m_arg, (double)v) != SQLITE_OK) {
+	if (sqlite3_bind_double(m_do_stmt, i, (double)v) != SQLITE_OK) {
 		sqlite3_finalize(m_do_stmt);
 		m_do_stmt = nullptr;
-		m_arg = 0;
 		std::string err = "Bind failure: ";
 		err += sqlite3_errmsg(m_handle);
 		throw std::runtime_error(err);
 	}
-
-	m_arg++;
 }
 
-void DBI::SQLiteDatabaseHandle::BindArg(const std::string &v)
+void DBI::SQLiteDatabaseHandle::BindArg(double v, int i)
 {
 	if (m_do_stmt == nullptr) {
 		return;
 	}
 
-	if (sqlite3_bind_text(m_do_stmt, m_arg, v.c_str(), (int)v.length(), SQLITE_TRANSIENT) != SQLITE_OK) {
+	if (sqlite3_bind_double(m_do_stmt, i, (double)v) != SQLITE_OK) {
 		sqlite3_finalize(m_do_stmt);
 		m_do_stmt = nullptr;
-		m_arg = 0;
 		std::string err = "Bind failure: ";
 		err += sqlite3_errmsg(m_handle);
 		throw std::runtime_error(err);
 	}
-
-	m_arg++;
 }
 
-void DBI::SQLiteDatabaseHandle::BindArg(const char *v)
+void DBI::SQLiteDatabaseHandle::BindArg(const std::string &v, int i)
 {
 	if (m_do_stmt == nullptr) {
 		return;
 	}
 
-	if (sqlite3_bind_text(m_do_stmt, m_arg, v, (int)strlen(v), SQLITE_TRANSIENT) != SQLITE_OK) {
+	if (sqlite3_bind_text(m_do_stmt, i, v.c_str(), (int)v.length(), SQLITE_TRANSIENT) != SQLITE_OK) {
 		sqlite3_finalize(m_do_stmt);
 		m_do_stmt = nullptr;
-		m_arg = 0;
 		std::string err = "Bind failure: ";
 		err += sqlite3_errmsg(m_handle);
 		throw std::runtime_error(err);
 	}
-
-	m_arg++;
 }
 
-void DBI::SQLiteDatabaseHandle::BindArg(std::nullptr_t v)
+void DBI::SQLiteDatabaseHandle::BindArg(const char *v, int i)
 {
 	if (m_do_stmt == nullptr) {
 		return;
 	}
 
-	if (sqlite3_bind_null(m_do_stmt, m_arg) != SQLITE_OK) {
+	if (sqlite3_bind_text(m_do_stmt, i, v, (int)strlen(v), SQLITE_TRANSIENT) != SQLITE_OK) {
 		sqlite3_finalize(m_do_stmt);
 		m_do_stmt = nullptr;
-		m_arg = 0;
 		std::string err = "Bind failure: ";
 		err += sqlite3_errmsg(m_handle);
 		throw std::runtime_error(err);
 	}
+}
 
-	m_arg++;
+void DBI::SQLiteDatabaseHandle::BindArg(std::nullptr_t v, int i)
+{
+	if (m_do_stmt == nullptr) {
+		return;
+	}
+
+	if (sqlite3_bind_null(m_do_stmt, i) != SQLITE_OK) {
+		sqlite3_finalize(m_do_stmt);
+		m_do_stmt = nullptr;
+		std::string err = "Bind failure: ";
+		err += sqlite3_errmsg(m_handle);
+		throw std::runtime_error(err);
+	}
 }
 
 std::unique_ptr<DBI::ResultSet> DBI::SQLiteDatabaseHandle::ExecuteDo()
@@ -406,7 +375,6 @@ std::unique_ptr<DBI::ResultSet> DBI::SQLiteDatabaseHandle::ExecuteDo()
 	if (rc != SQLITE_DONE) {
 		sqlite3_finalize(m_do_stmt);
 		m_do_stmt = nullptr;
-		m_arg = 0;
 
 		std::string err = "Error executing do: ";
 		err += sqlite3_errmsg(m_handle);
@@ -417,7 +385,6 @@ std::unique_ptr<DBI::ResultSet> DBI::SQLiteDatabaseHandle::ExecuteDo()
 	std::unique_ptr<DBI::ResultSet> rs(new DBI::ResultSet(field_names, rows, affected_rows));
 	sqlite3_finalize(m_do_stmt);
 	m_do_stmt = nullptr;
-	m_arg = 0;
 	return rs;
 }
 
@@ -435,7 +402,5 @@ void DBI::SQLiteDatabaseHandle::InitDo(const std::string& stmt)
 			err += sqlite3_errmsg(m_handle);
 			throw std::runtime_error(err);
 		}
-
-		m_arg = 1;
 	}
 }

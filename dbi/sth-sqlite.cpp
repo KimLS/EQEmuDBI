@@ -32,6 +32,16 @@ DBI::SQLiteStatementHandle::~SQLiteStatementHandle() {
 	}
 }
 
+void DBI::SQLiteStatementHandle::BindArg(bool v, int i)
+{
+	int8_t t = 0;
+	if (v) {
+		t = 1;
+	}
+
+	BindArg(t, i);
+}
+
 void DBI::SQLiteStatementHandle::BindArg(int8_t v, int i)
 {
 	if (sqlite3_bind_int(m_stmt, i, (int)v) != SQLITE_OK) {

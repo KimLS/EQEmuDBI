@@ -23,7 +23,7 @@ IF(MySQL_FOUND)
 	)
 	
 	SET(dbi_headers
-		${dbi_headers} dbh-mysql.h rs-mysql.h sth-mysql.h
+		${dbi_headers} dbh-mysql.h sth-mysql.h
 	)
 	INCLUDE_DIRECTORIES("${MySQL_INCLUDE_DIR}")
 ENDIF(MySQL_FOUND)

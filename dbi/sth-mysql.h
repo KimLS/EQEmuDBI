@@ -30,6 +30,7 @@ namespace DBI
 		virtual ~MySQLStatementHandle();
 
 	protected:
+		virtual void BindArg(bool v, int i);
 		virtual void BindArg(int8_t v, int i);
 		virtual void BindArg(uint8_t v, int i);
 		virtual void BindArg(int16_t v, int i);

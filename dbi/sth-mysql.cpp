@@ -22,6 +22,16 @@ DBI::MySQLStatementHandle::~MySQLStatementHandle() {
 	ClearBindParams();
 }
 
+void DBI::MySQLStatementHandle::BindArg(bool v, int i)
+{
+	int8_t t = 0;
+	if (v) {
+		t = 1;
+	}
+
+	BindArg(t, i);
+}
+
 void DBI::MySQLStatementHandle::BindArg(int8_t v, int i)
 {
 	InitBindParam(i - 1);
@@ -134,6 +144,7 @@ void DBI::MySQLStatementHandle::BindArg(uint64_t v, int i)
 	auto &bind = m_bind_params[i - 1];
 	memset(&bind, 0, sizeof(bind));
 
+	bind.buffer_type = MYSQL_TYPE_LONGLONG;
 	auto p = new uint64_t(v);
 	bind.buffer = p;
 	bind.is_unsigned = 1;

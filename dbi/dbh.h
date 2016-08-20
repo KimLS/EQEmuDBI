@@ -59,24 +59,36 @@ namespace DBI
 		std::unique_ptr<ResultSet> Do(const std::string &stmt, T value, Args... args)
 		{
 			InitDo(stmt);
-			BindArg(value);
-			return Do(stmt, args...);
+			BindArg(value, 1);
+			return _Do(2, args...);
 		}
 
 	protected:
-		virtual void BindArg(int8_t v) = 0;
-		virtual void BindArg(uint8_t v) = 0;
-		virtual void BindArg(int16_t v) = 0;
-		virtual void BindArg(uint16_t v) = 0;
-		virtual void BindArg(int32_t v) = 0;
-		virtual void BindArg(uint32_t v) = 0;
-		virtual void BindArg(int64_t v) = 0;
-		virtual void BindArg(uint64_t v) = 0;
-		virtual void BindArg(float v) = 0;
-		virtual void BindArg(double v) = 0;
-		virtual void BindArg(const std::string &v) = 0;
-		virtual void BindArg(const char *v) = 0;
-		virtual void BindArg(std::nullptr_t v) = 0;
+		std::unique_ptr<ResultSet> _Do(int i) {
+			return ExecuteDo();
+		}
+
+		template<typename T, typename... Args>
+		std::unique_ptr<ResultSet> _Do(int i, T value, Args... args)
+		{
+			BindArg(value, i);
+			return _Do(i + 1, args...);
+		}
+
+		virtual void BindArg(bool v, int i) = 0;
+		virtual void BindArg(int8_t v, int i) = 0;
+		virtual void BindArg(uint8_t v, int i) = 0;
+		virtual void BindArg(int16_t v, int i) = 0;
+		virtual void BindArg(uint16_t v, int i) = 0;
+		virtual void BindArg(int32_t v, int i) = 0;
+		virtual void BindArg(uint32_t v, int i) = 0;
+		virtual void BindArg(int64_t v, int i) = 0;
+		virtual void BindArg(uint64_t v, int i) = 0;
+		virtual void BindArg(float v, int i) = 0;
+		virtual void BindArg(double v, int i) = 0;
+		virtual void BindArg(const std::string &v, int i) = 0;
+		virtual void BindArg(const char *v, int i) = 0;
+		virtual void BindArg(std::nullptr_t v, int i) = 0;
 		virtual std::unique_ptr<ResultSet> ExecuteDo() = 0;
 		virtual void InitDo(const std::string& stmt) = 0;
 	};

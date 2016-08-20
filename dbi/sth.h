@@ -52,6 +52,7 @@ protected:
 		return _Execute(i + 1, args...);
 	}
 
+	virtual void BindArg(bool v, int i) = 0;
 	virtual void BindArg(int8_t v, int i) = 0;
 	virtual void BindArg(uint8_t v, int i) = 0;
 	virtual void BindArg(int16_t v, int i) = 0;
