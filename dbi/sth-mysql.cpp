@@ -1,281 +1,342 @@
-///*
-//	Copyright(C) 2014 EQEmu
-//	
-//	This program is free software; you can redistribute it and/or
-//	modify it under the terms of the GNU General Public License
-//	as published by the Free Software Foundation; either version 2
-//	of the License, or (at your option) any later version.
-//	
-//	This program is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//	GNU General Public License for more details.
-//	
-//	You should have received a copy of the GNU General Public License
-//	along with this program; if not, write to the Free Software
-//	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-//*/
-//#include "sth-mysql.h"
-//#include "rs-mysql.h"
-//#include <stdint.h>
-//#include <assert.h>
-//#include <string.h>
-//#include <memory>
-//
-//#ifdef _WIN32
-//#include <Windows.h>
-//#endif
-//#include <mysql.h>
-//#include <mysqld_error.h>
-//#include <errmsg.h>
-//
-//DBI::MySQLStatementHandle::MySQLStatementHandle(MYSQL_STMT* stmt) {
-//	statement = stmt;
-//}
-//
-//DBI::MySQLStatementHandle::~MySQLStatementHandle() {
-//	if(statement)
-//		mysql_stmt_close(statement);
-//}
-//
-//std::unique_ptr<DBI::ResultSet> DBI::MySQLStatementHandle::Execute() {
-//	StatementArguments args;
-//	return Execute(args);
-//}
-//
-//std::unique_ptr<DBI::ResultSet> DBI::MySQLStatementHandle::Execute(StatementArguments &args) {
-//	assert(statement != nullptr);
-//	std::unique_ptr<MYSQL_BIND> params(nullptr);
-//	size_t argc = args.size();
-//	if(argc > 0) {
-//		params.reset(new MYSQL_BIND[argc]);
-//		memset(params.get(), 0, sizeof(MYSQL_BIND) * argc);
-//
-//		DBI::Any *t = nullptr;
-//		for(size_t i = 0; i < argc; ++i) {
-//			t = &args[i];
-//			if(t->empty()) {
-//				params.get()[i].buffer_type = MYSQL_TYPE_NULL;
-//				params.get()[i].buffer = nullptr;
-//				params.get()[i].is_unsigned = 0;
-//				params.get()[i].is_null = nullptr;
-//				params.get()[i].length = 0;
-//			} else if(t->type() == typeid(bool)) {
-//				try {
-//					bool* v = DBI::any_cast<bool>(&*t);
-//					if(v) {
-//						params.get()[i].buffer_type = MYSQL_TYPE_TINY;
-//						params.get()[i].buffer = v;
-//						params.get()[i].is_unsigned = 0;
-//						params.get()[i].is_null = nullptr;
-//						params.get()[i].length = 0;
-//					}
-//				} catch(DBI::bad_any_cast) {
-//					SetError(STH_ERROR_INVALID_ARGS, "Could not convert from bool arg in DBI::MySQLStatementHandle::Execute(args).");
-//					return nullptr;
-//				}
-//			} else if(t->type() == typeid(uint8_t)) {
-//				try {
-//					uint8_t* v = DBI::any_cast<uint8_t>(&*t);
-//					if(v) {
-//						params.get()[i].buffer_type = MYSQL_TYPE_TINY;
-//						params.get()[i].buffer = v;
-//						params.get()[i].is_unsigned = 1;
-//						params.get()[i].is_null = nullptr;
-//						params.get()[i].length = 0;
-//					}
-//				} catch(DBI::bad_any_cast) {
-//					SetError(STH_ERROR_INVALID_ARGS, "Could not convert from uint8_t arg in DBI::MySQLStatementHandle::Execute(args).");
-//					return nullptr;
-//				}
-//			} else if(t->type() == typeid(int8_t)) {
-//				try {
-//					int8_t* v = DBI::any_cast<int8_t>(&*t);
-//					if(v) {
-//						params.get()[i].buffer_type = MYSQL_TYPE_TINY;
-//						params.get()[i].buffer = v;
-//						params.get()[i].is_unsigned = 0;
-//						params.get()[i].is_null = nullptr;
-//						params.get()[i].length = 0;
-//					}
-//				} catch(DBI::bad_any_cast) {
-//					SetError(STH_ERROR_INVALID_ARGS, "Could not convert from int8_t arg in DBI::MySQLStatementHandle::Execute(args).");
-//					return nullptr;
-//				}
-//			} else if(t->type() == typeid(uint16_t)) {
-//				try {
-//					uint16_t* v = DBI::any_cast<uint16_t>(&*t);
-//					if(v) {
-//						params.get()[i].buffer_type = MYSQL_TYPE_SHORT;
-//						params.get()[i].buffer = v;
-//						params.get()[i].is_unsigned = 1;
-//						params.get()[i].is_null = nullptr;
-//						params.get()[i].length = 0;
-//					}
-//				} catch(DBI::bad_any_cast) {
-//					SetError(STH_ERROR_INVALID_ARGS, "Could not convert from uint16_t arg in DBI::MySQLStatementHandle::Execute(args).");
-//					return nullptr;
-//				}
-//			} else if(t->type() == typeid(int16_t)) {
-//				try {
-//					int16_t* v = DBI::any_cast<int16_t>(&*t);
-//					if(v) {
-//						params.get()[i].buffer_type = MYSQL_TYPE_SHORT;
-//						params.get()[i].buffer = v;
-//						params.get()[i].is_unsigned = 0;
-//						params.get()[i].is_null = nullptr;
-//						params.get()[i].length = 0;
-//					}
-//				} catch(DBI::bad_any_cast) {
-//					SetError(STH_ERROR_INVALID_ARGS, "Could not convert from int16_t arg in DBI::MySQLStatementHandle::Execute(args).");
-//					return nullptr;
-//				}
-//			} else if(t->type() == typeid(uint32_t)) {
-//				try {
-//					uint32_t* v = DBI::any_cast<uint32_t>(&*t);
-//					if(v) {
-//						params.get()[i].buffer_type = MYSQL_TYPE_LONG;
-//						params.get()[i].buffer = v;
-//						params.get()[i].is_unsigned = 1;
-//						params.get()[i].is_null = nullptr;
-//						params.get()[i].length = 0;
-//					}
-//				} catch(DBI::bad_any_cast) {
-//					SetError(STH_ERROR_INVALID_ARGS, "Could not convert from uint32_t arg in DBI::MySQLStatementHandle::Execute(args).");
-//					return nullptr;
-//				}
-//			} else if(t->type() == typeid(int32_t)) {
-//				try {
-//					int32_t* v = DBI::any_cast<int32_t>(&*t);
-//					if(v) {
-//						params.get()[i].buffer_type = MYSQL_TYPE_LONG;
-//						params.get()[i].buffer = v;
-//						params.get()[i].is_unsigned = 0;
-//						params.get()[i].is_null = nullptr;
-//						params.get()[i].length = 0;
-//					}
-//				} catch(DBI::bad_any_cast) {
-//					SetError(STH_ERROR_INVALID_ARGS, "Could not convert from int32_t arg in DBI::MySQLStatementHandle::Execute(args).");
-//					return nullptr;
-//				}
-//			} else if(t->type() == typeid(uint64_t)) {
-//				try {
-//					uint64_t* v = DBI::any_cast<uint64_t>(&*t);
-//					if(v) {
-//						params.get()[i].buffer_type = MYSQL_TYPE_LONGLONG;
-//						params.get()[i].buffer = v;
-//						params.get()[i].is_unsigned = 1;
-//						params.get()[i].is_null = nullptr;
-//						params.get()[i].length = 0;
-//					}
-//				} catch(DBI::bad_any_cast) {
-//					SetError(STH_ERROR_INVALID_ARGS, "Could not convert from uint64_t arg in DBI::MySQLStatementHandle::Execute(args).");
-//					return nullptr;
-//				}
-//			} else if(t->type() == typeid(int64_t)) {
-//				try {
-//					int64_t* v = DBI::any_cast<int64_t>(&*t);
-//					if(v) {
-//						params.get()[i].buffer_type = MYSQL_TYPE_LONGLONG;
-//						params.get()[i].buffer = v;
-//						params.get()[i].is_unsigned = 0;
-//						params.get()[i].is_null = nullptr;
-//						params.get()[i].length = 0;
-//					}
-//				} catch(DBI::bad_any_cast) {
-//					SetError(STH_ERROR_INVALID_ARGS, "Could not convert from int64_t arg in DBI::MySQLStatementHandle::Execute(args).");
-//					return nullptr;
-//				}
-//			} else if(t->type() == typeid(float)) {
-//				try {
-//					float* v = DBI::any_cast<float>(&*t);
-//					if(v) {
-//						params.get()[i].buffer_type = MYSQL_TYPE_FLOAT;
-//						params.get()[i].buffer = v;
-//						params.get()[i].is_unsigned = 0;
-//						params.get()[i].is_null = nullptr;
-//						params.get()[i].length = 0;
-//					}
-//				} catch(DBI::bad_any_cast) {
-//					SetError(STH_ERROR_INVALID_ARGS, "Could not convert from float arg in DBI::MySQLStatementHandle::Execute(args).");
-//					return nullptr;
-//				}
-//			} else if(t->type() == typeid(double)) {
-//				try {
-//					double* v = DBI::any_cast<double>(&*t);
-//					if(v) {
-//						params.get()[i].buffer_type = MYSQL_TYPE_DOUBLE;
-//						params.get()[i].buffer = v;
-//						params.get()[i].is_unsigned = 0;
-//						params.get()[i].is_null = nullptr;
-//						params.get()[i].length = 0;
-//					}
-//				} catch(DBI::bad_any_cast) {
-//					SetError(STH_ERROR_INVALID_ARGS, "Could not convert from double arg in DBI::MySQLStatementHandle::Execute(args).");
-//					return nullptr;
-//				}
-//			} else if(t->type() == typeid(std::string)) {
-//				try {
-//					std::string* v = DBI::any_cast<std::string>(&*t);
-//					if(v) {
-//						params.get()[i].buffer_type = MYSQL_TYPE_STRING;
-//						params.get()[i].buffer = (void*)v->c_str();
-//						params.get()[i].is_unsigned = 0;
-//						params.get()[i].is_null = nullptr;
-//						params.get()[i].length = 0;
-//						params.get()[i].buffer_length = static_cast<unsigned long>(v->length());
-//					}
-//				} catch(DBI::bad_any_cast) {
-//					SetError(STH_ERROR_INVALID_ARGS, "Could not convert from std::string arg in DBI::MySQLStatementHandle::Execute(args).");
-//					return nullptr;
-//				}
-//			} else if(t->type() == typeid(const char*)) {
-//				try {
-//					const char* v = DBI::any_cast<const char*>(*t);
-//					if(v) {
-//						params.get()[i].buffer_type = MYSQL_TYPE_STRING;
-//						params.get()[i].buffer = (void*)v;
-//						params.get()[i].is_unsigned = 0;
-//						params.get()[i].is_null = nullptr;
-//						params.get()[i].length = 0;
-//						params.get()[i].buffer_length = static_cast<unsigned long>(strlen(v));
-//					}
-//				} catch(DBI::bad_any_cast) {
-//					SetError(STH_ERROR_INVALID_ARGS, "Could not convert from const char* arg in DBI::MySQLStatementHandle::Execute(args).");
-//					return nullptr;
-//				}
-//			} else if(t->type() == typeid(std::nullptr_t)) {
-//				params.get()[i].buffer_type = MYSQL_TYPE_NULL;
-//				params.get()[i].buffer = nullptr;
-//				params.get()[i].is_unsigned = 0;
-//				params.get()[i].is_null = nullptr;
-//				params.get()[i].length = 0;
-//			} else {
-//				SetError(STH_ERROR_INVALID_ARGS, "Could not convert from unknown arg in DBI::MySQLStatementHandle::Execute(args).");
-//				return nullptr;
-//			}
-//		}
-//		
-//		if(mysql_stmt_bind_param(statement, params.get())) {
-//			std::string err = mysql_stmt_error(statement);
-//			SetError(STH_ERROR_BIND_FAILURE, err);
-//			return nullptr;
-//		}
-//
-//		if(mysql_stmt_execute(statement)) {
-//			std::string err = mysql_stmt_error(statement);
-//			SetError(STH_ERROR_STMT_FAILURE, err);
-//			return nullptr;
-//		}
-//	} else {
-//		if(mysql_stmt_execute(statement)) {
-//			std::string err = mysql_stmt_error(statement);
-//			SetError(STH_ERROR_STMT_FAILURE, err);
-//			return nullptr;
-//		}		
-//	}
-//
-//	std::unique_ptr<ResultSet> res(DBI::MySQLDatabaseHandle::_internal_results_from_mysql_stmt(statement));
-//	return res;
-//}
-//
+#include "sth-mysql.h"
+
+#ifndef SOCKET
+#define SOCKET int
+#endif
+#include <mysql.h>
+#include <mysqld_error.h>
+#include <errmsg.h>
+#undef SOCKET
+
+DBI::MySQLStatementHandle::MySQLStatementHandle(MYSQL *handle_, MYSQL_STMT *stmt_)
+{
+	m_handle = handle_;
+	m_stmt = stmt_;
+}
+
+DBI::MySQLStatementHandle::~MySQLStatementHandle() {
+	if (m_stmt) {
+		mysql_stmt_close(m_stmt);
+	}
+
+	ClearBindParams();
+}
+
+void DBI::MySQLStatementHandle::BindArg(int8_t v, int i)
+{
+	InitBindParam(i - 1);
+
+	auto &bind = m_bind_params[i - 1];
+	memset(&bind, 0, sizeof(bind));
+
+	bind.buffer_type = MYSQL_TYPE_TINY;
+	auto p = new int8_t(v);
+	bind.buffer = p;
+	bind.is_unsigned = 0;
+	bind.is_null = nullptr;
+	bind.length = 0;
+}
+
+void DBI::MySQLStatementHandle::BindArg(uint8_t v, int i)
+{
+	InitBindParam(i - 1);
+
+	auto &bind = m_bind_params[i - 1];
+	memset(&bind, 0, sizeof(bind));
+
+	bind.buffer_type = MYSQL_TYPE_TINY;
+	auto p = new uint8_t(v);
+	bind.buffer = p;
+	bind.is_unsigned = 1;
+	bind.is_null = nullptr;
+	bind.length = 0;
+}
+
+void DBI::MySQLStatementHandle::BindArg(int16_t v, int i)
+{
+	InitBindParam(i - 1);
+
+	auto &bind = m_bind_params[i - 1];
+	memset(&bind, 0, sizeof(bind));
+
+	bind.buffer_type = MYSQL_TYPE_SHORT;
+	auto p = new int16_t(v);
+	bind.buffer = p;
+	bind.is_unsigned = 0;
+	bind.is_null = nullptr;
+	bind.length = 0;
+}
+
+void DBI::MySQLStatementHandle::BindArg(uint16_t v, int i)
+{
+	InitBindParam(i - 1);
+
+	auto &bind = m_bind_params[i - 1];
+	memset(&bind, 0, sizeof(bind));
+
+	bind.buffer_type = MYSQL_TYPE_SHORT;
+	auto p = new uint16_t(v);
+	bind.buffer = p;
+	bind.is_unsigned = 1;
+	bind.is_null = nullptr;
+	bind.length = 0;
+}
+
+void DBI::MySQLStatementHandle::BindArg(int32_t v, int i)
+{
+	InitBindParam(i - 1);
+
+	auto &bind = m_bind_params[i - 1];
+	memset(&bind, 0, sizeof(bind));
+
+	bind.buffer_type = MYSQL_TYPE_LONG;
+	auto p = new int32_t(v);
+	bind.buffer = p;
+	bind.is_unsigned = 0;
+	bind.is_null = nullptr;
+	bind.length = 0;
+}
+
+void DBI::MySQLStatementHandle::BindArg(uint32_t v, int i)
+{
+	InitBindParam(i - 1);
+
+	auto &bind = m_bind_params[i - 1];
+	memset(&bind, 0, sizeof(bind));
+
+	bind.buffer_type = MYSQL_TYPE_LONG;
+	auto p = new uint32_t(v);
+	bind.buffer = p;
+	bind.is_unsigned = 1;
+	bind.is_null = nullptr;
+	bind.length = 0;
+}
+
+void DBI::MySQLStatementHandle::BindArg(int64_t v, int i)
+{
+	InitBindParam(i - 1);
+
+	auto &bind = m_bind_params[i - 1];
+	memset(&bind, 0, sizeof(bind));
+
+	bind.buffer_type = MYSQL_TYPE_LONGLONG;
+	auto p = new int64_t(v);
+	bind.buffer = p;
+	bind.is_unsigned = 0;
+	bind.is_null = nullptr;
+	bind.length = 0;
+}
+
+void DBI::MySQLStatementHandle::BindArg(uint64_t v, int i)
+{
+	InitBindParam(i - 1);
+
+	auto &bind = m_bind_params[i - 1];
+	memset(&bind, 0, sizeof(bind));
+
+	auto p = new uint64_t(v);
+	bind.buffer = p;
+	bind.is_unsigned = 1;
+	bind.is_null = nullptr;
+	bind.length = 0;
+}
+
+void DBI::MySQLStatementHandle::BindArg(float v, int i)
+{
+	InitBindParam(i - 1);
+
+	auto &bind = m_bind_params[i - 1];
+	memset(&bind, 0, sizeof(bind));
+
+	bind.buffer_type = MYSQL_TYPE_FLOAT;
+	auto p = new float(v);
+	bind.buffer = p;
+	bind.is_unsigned = 0;
+	bind.is_null = nullptr;
+	bind.length = 0;
+}
+
+void DBI::MySQLStatementHandle::BindArg(double v, int i)
+{
+	InitBindParam(i - 1);
+
+	auto &bind = m_bind_params[i - 1];
+	memset(&bind, 0, sizeof(bind));
+
+	bind.buffer_type = MYSQL_TYPE_DOUBLE;
+	auto p = new double(v);
+	bind.buffer = p;
+	bind.is_unsigned = 0;
+	bind.is_null = nullptr;
+	bind.length = 0;
+}
+
+void DBI::MySQLStatementHandle::BindArg(const std::string &v, int i)
+{
+	InitBindParam(i - 1);
+
+	auto &bind = m_bind_params[i - 1];
+	memset(&bind, 0, sizeof(bind));
+
+	bind.buffer_type = MYSQL_TYPE_STRING;
+
+	auto p = new char[v.length()];
+	memcpy(p, v.c_str(), v.length());
+	bind.buffer = p;
+	bind.is_unsigned = 0;
+	bind.is_null = nullptr;
+	bind.length = 0;
+	bind.buffer_length = static_cast<unsigned long>(v.length());
+}
+
+void DBI::MySQLStatementHandle::BindArg(const char *v, int i)
+{
+	InitBindParam(i - 1);
+
+	auto &bind = m_bind_params[i - 1];
+	memset(&bind, 0, sizeof(bind));
+
+	bind.buffer_type = MYSQL_TYPE_STRING;
+
+	auto v_length = strlen(v);
+	auto p = new char[v_length];
+	memcpy(p, v, v_length);
+	bind.buffer = p;
+	bind.is_unsigned = 0;
+	bind.is_null = nullptr;
+	bind.length = 0;
+	bind.buffer_length = static_cast<unsigned long>(v_length);
+}
+
+void DBI::MySQLStatementHandle::BindArg(std::nullptr_t v, int i)
+{
+	InitBindParam(i - 1);
+
+	auto &bind = m_bind_params[i - 1];
+	memset(&bind, 0, sizeof(bind));
+
+	bind.buffer_type = MYSQL_TYPE_NULL;
+	bind.buffer = nullptr;
+	bind.is_unsigned = 0;
+	bind.is_null = nullptr;
+	bind.length = 0;
+}
+
+std::unique_ptr<DBI::ResultSet> DBI::MySQLStatementHandle::InternalExecute()
+{
+	if (m_bind_params.size() > 0) {
+		if (mysql_stmt_bind_param(m_stmt, &m_bind_params[0])) {
+			ClearBindParams();
+			std::string err = "Statement execute failure: ";
+			err += mysql_stmt_error(m_stmt);
+			throw std::runtime_error(err);
+		}
+	}
+
+	if (mysql_stmt_execute(m_stmt)) {
+		ClearBindParams();
+		std::string err = "Statement execute failure: ";
+		err += mysql_stmt_error(m_stmt);
+		throw std::runtime_error(err);
+	}
+
+	MYSQL_RES *res = mysql_stmt_result_metadata(m_stmt);
+	std::vector<std::unique_ptr<char>> buffers;
+	std::unique_ptr<MYSQL_BIND> results(nullptr);
+	std::unique_ptr<my_bool> is_null(nullptr);
+	std::unique_ptr<my_bool> err(nullptr);
+	std::unique_ptr<unsigned long> len(nullptr);
+	std::vector<std::string> field_names;
+	uint32_t fields = 0;
+
+	if (res) {
+		fields = mysql_num_fields(res);
+		if (fields != 0) {
+			buffers.resize(fields);
+			results.reset(new MYSQL_BIND[fields]);
+			is_null.reset(new my_bool[fields]);
+			err.reset(new my_bool[fields]);
+			len.reset(new unsigned long[fields]);
+			memset(results.get(), 0, sizeof(MYSQL_BIND) * fields);
+			memset(is_null.get(), 0, sizeof(my_bool) * fields);
+			memset(err.get(), 0, sizeof(my_bool) * fields);
+			memset(len.get(), 0, sizeof(unsigned long) * fields);
+
+			MYSQL_FIELD *f = nullptr;
+			uint32_t i = 0;
+			while ((f = mysql_fetch_field(res)) != nullptr) {
+				field_names.push_back(std::string(f->name));
+
+				buffers[i].reset(new char[f->length]);
+				results.get()[i].buffer_type = MYSQL_TYPE_STRING;
+				results.get()[i].buffer = buffers[i].get();
+				results.get()[i].buffer_length = f->length;
+				results.get()[i].is_null = &is_null.get()[i];
+				results.get()[i].error = &err.get()[i];
+				results.get()[i].length = &len.get()[i];
+				++i;
+			}
+
+			mysql_stmt_bind_result(m_stmt, results.get());
+		}
+		mysql_free_result(res);
+	}
+
+	if (mysql_stmt_store_result(m_stmt)) {
+		ClearBindParams();
+		return nullptr;
+	}
+
+	std::list<DBI::ResultSet::Row> rows;
+	while (!mysql_stmt_fetch(m_stmt)) {
+		DBI::ResultSet::Row row;
+
+		for (uint32_t i = 0; i < fields; ++i) {
+			std::string val;
+			if (len.get()[i] > 0) {
+				val.assign(buffers[i].get(), len.get()[i]);
+			}
+
+			row[field_names[i]] = DBI::ResultSet::FieldData(is_null.get()[i] ? true : false, err.get()[i] ? true : false, val);
+		}
+		rows.push_back(row);
+	}
+
+	ClearBindParams();
+	ResultSet *rs = new ResultSet(field_names, rows, static_cast<unsigned long>(mysql_stmt_affected_rows(m_stmt)));
+	return std::unique_ptr<ResultSet>(rs);
+}
+
+void DBI::MySQLStatementHandle::ClearBindParams()
+{
+	for (auto &bind : m_bind_params) {
+		if (bind.buffer_type == MYSQL_TYPE_STRING) {
+			delete[] bind.buffer;
+			continue;
+		}
+
+		if (bind.buffer_type == MYSQL_TYPE_NULL) {
+			continue;
+		}
+
+		delete bind.buffer;
+	}
+
+	m_bind_params.clear();
+}
+
+void DBI::MySQLStatementHandle::InitBindParam(int i)
+{
+	if (i >= m_bind_params.size()) {
+		m_bind_params.resize(i + 1);
+	}
+	else {
+		auto &bind = m_bind_params[i];
+
+		if (bind.buffer_type == MYSQL_TYPE_STRING) {
+			delete[] bind.buffer;
+		} else if (bind.buffer_type != MYSQL_TYPE_NULL) {
+			delete bind.buffer;
+		}
+	}
+}
