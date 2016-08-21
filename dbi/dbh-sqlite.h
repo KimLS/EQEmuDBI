@@ -1,70 +1,49 @@
-/*
-	Copyright(C) 2014 EQEmu
-	
-	This program is free software; you can redistribute it and/or
-	modify it under the terms of the GNU General Public License
-	as published by the Free Software Foundation; either version 2
-	of the License, or (at your option) any later version.
-	
-	This program is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
-	
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, write to the Free Software
-	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
-#ifndef DBI__DBH_SQLITE_H
-#define DBI__DBH_SQLITE_H
+#pragma once
 
 #include "dbh.h"
 
 struct sqlite3;
-struct sqlite3_stmt;
 
 namespace DBI
 {
-
-class SQLiteDatabaseHandle : public DatabaseHandle
-{
-public:
-	SQLiteDatabaseHandle();
-	virtual ~SQLiteDatabaseHandle();
+	class SQLiteStatementHandle;
+	class SQLiteDatabaseHandle : public DatabaseHandle
+	{
+	public:
+		SQLiteDatabaseHandle();
+		virtual ~SQLiteDatabaseHandle();
 	
-	virtual void Connect(std::string dbname, std::string host, std::string username,
-		std::string auth, DatabaseAttributes &attr);
-	virtual void Disconnect();
+		virtual void Connect(std::string dbname, std::string host, std::string username,
+			std::string auth, DatabaseAttributes &attr);
+		virtual void Disconnect();
 	
-	virtual std::unique_ptr<StatementHandle> Prepare(std::string stmt);
+		virtual std::unique_ptr<StatementHandle> Prepare(std::string stmt);
 
-	virtual void Ping();
-	virtual void Begin();
-	virtual void Commit();
-	virtual void Rollback();
+		virtual void Ping();
+		virtual void Begin();
+		virtual void Commit();
+		virtual void Rollback();
 
-protected:
-	virtual void BindArg(bool v, int i);
-	virtual void BindArg(int8_t v, int i);
-	virtual void BindArg(uint8_t v, int i);
-	virtual void BindArg(int16_t v, int i);
-	virtual void BindArg(uint16_t v, int i);
-	virtual void BindArg(int32_t v, int i);
-	virtual void BindArg(uint32_t v, int i);
-	virtual void BindArg(int64_t v, int i);
-	virtual void BindArg(uint64_t v, int i);
-	virtual void BindArg(float v, int i);
-	virtual void BindArg(double v, int i);
-	virtual void BindArg(const std::string &v, int i);
-	virtual void BindArg(const char *v, int i);
-	virtual void BindArg(std::nullptr_t v, int i);
-	virtual std::unique_ptr<ResultSet> ExecuteDo();
-	virtual void InitDo(const std::string& stmt);
+	protected:
+		virtual void BindArg(bool v, int i);
+		virtual void BindArg(int8_t v, int i);
+		virtual void BindArg(uint8_t v, int i);
+		virtual void BindArg(int16_t v, int i);
+		virtual void BindArg(uint16_t v, int i);
+		virtual void BindArg(int32_t v, int i);
+		virtual void BindArg(uint32_t v, int i);
+		virtual void BindArg(int64_t v, int i);
+		virtual void BindArg(uint64_t v, int i);
+		virtual void BindArg(float v, int i);
+		virtual void BindArg(double v, int i);
+		virtual void BindArg(const std::string &v, int i);
+		virtual void BindArg(const char *v, int i);
+		virtual void BindArg(std::nullptr_t v, int i);
+		virtual std::unique_ptr<ResultSet> ExecuteDo();
+		virtual void InitDo(const std::string& stmt);
 
-	sqlite3 *m_handle;
-	sqlite3_stmt *m_do_stmt;
-};
-
+		sqlite3 *m_handle;
+		std::unique_ptr<SQLiteStatementHandle> m_do_statement;
+	};
 }
 
-#endif

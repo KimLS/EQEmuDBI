@@ -44,9 +44,9 @@ IF(DBI_BUILD_TESTS)
 		ADD_SUBDIRECTORY(test-mysql)
 	ENDIF(MySQL_FOUND)
 	
-	#IF(PostgreSQL_FOUND)
-	#	ADD_SUBDIRECTORY(test-postgresql)
-	#ENDIF(PostgreSQL_FOUND)
+	IF(PostgreSQL_FOUND)
+		ADD_SUBDIRECTORY(test-postgresql)
+	ENDIF(PostgreSQL_FOUND)
 	
 	ADD_SUBDIRECTORY(test-sqlite)
 ENDIF(DBI_BUILD_TESTS)

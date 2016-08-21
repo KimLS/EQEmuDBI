@@ -1,51 +1,47 @@
-///*
-//	Copyright(C) 2014 EQEmu
-//	
-//	This program is free software; you can redistribute it and/or
-//	modify it under the terms of the GNU General Public License
-//	as published by the Free Software Foundation; either version 2
-//	of the License, or (at your option) any later version.
-//	
-//	This program is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//	GNU General Public License for more details.
-//	
-//	You should have received a copy of the GNU General Public License
-//	along with this program; if not, write to the Free Software
-//	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-//*/
-//#ifndef DBI__STH_PG_H
-//#define DBI__STH_PG_H
-//
-//#include "sth.h"
-//#include "dbh-pg.h"
-//
-//struct pg_conn;
-//typedef struct pg_conn PGconn;
-//
-//namespace DBI
-//{
-//
-//class ResultSet;
-//
-//class PGStatementHandle : public StatementHandle
-//{
-//public:
-//	virtual ~PGStatementHandle();
-//	
-//	virtual std::unique_ptr<ResultSet> Execute();
-//	virtual std::unique_ptr<ResultSet> Execute(StatementArguments &args);
-//private:
-//	PGStatementHandle(PGconn *conn_, std::string name_);
-//
-//	PGconn *conn;
-//	std::string name;
-//
-//	friend class DBI::PGDatabaseHandle;
-//};
-//
-//}
-//
-//#endif
-//
+#pragma once
+
+#include "dbh-pg.h"
+#include <vector>
+
+struct pg_conn;
+typedef struct pg_conn PGconn;
+
+namespace DBI
+{
+
+	class ResultSet;
+
+	class PGStatementHandle : public StatementHandle
+	{
+	public:
+		virtual ~PGStatementHandle();
+
+	protected:
+		virtual void BindArg(bool v, int i);
+		virtual void BindArg(int8_t v, int i);
+		virtual void BindArg(uint8_t v, int i);
+		virtual void BindArg(int16_t v, int i);
+		virtual void BindArg(uint16_t v, int i);
+		virtual void BindArg(int32_t v, int i);
+		virtual void BindArg(uint32_t v, int i);
+		virtual void BindArg(int64_t v, int i);
+		virtual void BindArg(uint64_t v, int i);
+		virtual void BindArg(float v, int i);
+		virtual void BindArg(double v, int i);
+		virtual void BindArg(const std::string &v, int i);
+		virtual void BindArg(const char *v, int i);
+		virtual void BindArg(std::nullptr_t v, int i);
+		virtual std::unique_ptr<ResultSet> InternalExecute();
+		void ClearBindParams();
+		void InitBindParam(int i);
+
+		PGStatementHandle(PGconn *conn_, std::string name_);
+
+		PGconn *m_handle;
+		std::string m_name;
+		std::vector<char*> m_bind_params;
+
+		friend class DBI::PGDatabaseHandle;
+	};
+}
+
